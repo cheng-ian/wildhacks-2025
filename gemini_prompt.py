@@ -1,6 +1,6 @@
 from google import genai
 
-client = genai.Client(api_key = "AIzaSyAxbFxcOrD-He0S9Tw1qwxKwEj78ER73Q4")
+client = genai.Client(api_key = "[API_KEY]")
 
 user_meal = "steak dinner"
 
