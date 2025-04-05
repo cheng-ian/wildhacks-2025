@@ -7,7 +7,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-cred = credentials.Certificate("config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4892f7e48c.json")
+cred = credentials.Certificate("")
 firebase_admin.initialize_app(cred)
 
 # Example route to check if the backend is working
