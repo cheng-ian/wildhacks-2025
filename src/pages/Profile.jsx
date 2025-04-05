@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Profile = () => {
   const [isSeller, setIsSeller] = useState(false);
@@ -6,7 +6,8 @@ const Profile = () => {
     name: 'John Doe',
     email: 'johndoe@example.com',
     bio: 'Farmer from Illinois specializing in organic vegetables.',
-    profilePicture: null
+    profilePicture: null,
+    location: ''
   });
   const [listings, setListings] = useState([
     { id: 1, name: 'Fresh Tomatoes', price: '$3/lb', image: null },
@@ -29,14 +30,30 @@ const Profile = () => {
     setUserInfo({ ...userInfo, profilePicture: url });
   };
 
-  const handleProductImageUpload = (index, e) => {
-    const file = e.target.files[0];
-    const url = URL.createObjectURL(file);
-    const updatedListings = listings.map((listing, i) => (
-      i === index ? { ...listing, image: url } : listing
-    ));
-    setListings(updatedListings);
-  };
+  useEffect(() => {
+    const loadGoogleMaps = () => {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+      script.async = true;
+      script.onload = () => window.google && initAutocomplete();
+      document.body.appendChild(script);
+    };
+
+    const initAutocomplete = () => {
+      const input = document.getElementById('location-input');
+      if (!input || !window.google) return;
+
+      const autocomplete = new window.google.maps.places.Autocomplete(input);
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.formatted_address) {
+          setUserInfo({ ...userInfo, location: place.formatted_address });
+        }
+      });
+    };
+
+    loadGoogleMaps();
+  }, []);
 
   return (
     <div className="p-6">
@@ -79,35 +96,20 @@ const Profile = () => {
           placeholder="Bio"
         />
 
+        <input 
+          type="text" 
+          id="location-input"
+          name="location" 
+          value={userInfo.location} 
+          onChange={handleChange} 
+          className="w-full mb-2 p-2 border border-gray-300 rounded"
+          placeholder="Enter your location"
+        />
+
         <button onClick={toggleSellerMode} className="bg-blue-500 text-white py-2 px-4 rounded mt-2">
           {isSeller ? 'Switch to Buyer Mode' : 'Switch to Seller Mode'}
         </button>
       </div>
-
-      {isSeller && (
-        <div className="bg-white p-4 rounded-2xl shadow mb-6">
-          <h2 className="text-xl font-bold mb-2">My Listings</h2>
-          {listings.map((listing, index) => (
-            <div key={listing.id} className="p-2 mb-2 border-b">
-              <h3 className="font-bold">{listing.name}</h3>
-              <p>{listing.price}</p>
-              {listing.image && (
-                <img src={listing.image} alt="Product" className="w-32 h-32 rounded mb-2" />
-              )}
-
-              <label className="bg-blue-500 text-white py-2 px-4 rounded cursor-pointer inline-block mt-2">
-                Upload Product Image
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => handleProductImageUpload(index, e)} 
-                  className="hidden"
-                />
-              </label>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
