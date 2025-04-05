@@ -64,6 +64,8 @@ const Search = () => {
           <pre>{JSON.stringify(searchResults, null, 2)}</pre>
         </div>
       )}
+
+      <p className="text-gray-500 text-sm mt-4">Powered by Gemini API</p>
     </div>
   );
 };
