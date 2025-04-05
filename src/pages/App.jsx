@@ -10,16 +10,22 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
-        <nav className="bg-white shadow p-4 flex justify-between">
-          <Link to="/" className="text-xl font-bold">FarmFresh</Link>
-          <div className="flex space-x-4">
-            <Link to="/" className="text-gray-700">Home</Link>
-            <Link to="/marketplace" className="text-gray-700">Marketplace</Link>
-            <Link to="/feed" className="text-gray-700">Social Feed</Link>
-            <Link to="/search" className="text-gray-700">Search</Link>
-            <Link to="/profile" className="text-gray-700">Profile</Link>
+        {/* Header with Tabs and Logo */}
+        <header className="bg-white shadow p-4 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <img src="/logo.png" alt="FarmFresh Logo" className="h-10 w-10" />
+            <h1 className="text-2xl font-bold text-gray-800">FarmFresh</h1>
           </div>
-        </nav>
+          <nav className="flex space-x-6">
+            <Link to="/" className="text-gray-700 hover:text-blue-500 transition">Home</Link>
+            <Link to="/marketplace" className="text-gray-700 hover:text-blue-500 transition">Marketplace</Link>
+            <Link to="/feed" className="text-gray-700 hover:text-blue-500 transition">Social Feed</Link>
+            <Link to="/search" className="text-gray-700 hover:text-blue-500 transition">Search</Link>
+            <Link to="/profile" className="text-gray-700 hover:text-blue-500 transition">Profile</Link>
+          </nav>
+        </header>
+
+        {/* App Pages */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/marketplace" element={<Marketplace />} />
