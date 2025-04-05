@@ -7,7 +7,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-cred = credentials.Certificate("")
+cred = credentials.Certificate("config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json")
 firebase_admin.initialize_app(cred)
 
 # Example route to check if the backend is working
@@ -37,7 +37,7 @@ def create_listing():
         'timestamp': datetime.now()
     })
 
-    listing_id = listing_ref.id  # Get the ID of the new listing
+    listing_id = listing_ref[1].id
     
     # Now, create product entries (items being sold) under this listing
     for item in items:
