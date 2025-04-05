@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import CreateListing from './CreateListing';
 
 const Profile = () => {
   const [isSeller, setIsSeller] = useState(false);
@@ -24,36 +25,9 @@ const Profile = () => {
     setUserInfo({ ...userInfo, [name]: value });
   };
 
-  const handleProfilePictureUpload = (e) => {
-    const file = e.target.files[0];
-    const url = URL.createObjectURL(file);
-    setUserInfo({ ...userInfo, profilePicture: url });
+  const addListing = (listing) => {
+    setListings([...listings, { ...listing, id: listings.length + 1 }]);
   };
-
-  useEffect(() => {
-    const loadGoogleMaps = () => {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
-      script.async = true;
-      script.onload = () => window.google && initAutocomplete();
-      document.body.appendChild(script);
-    };
-
-    const initAutocomplete = () => {
-      const input = document.getElementById('location-input');
-      if (!input || !window.google) return;
-
-      const autocomplete = new window.google.maps.places.Autocomplete(input);
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (place.formatted_address) {
-          setUserInfo({ ...userInfo, location: place.formatted_address });
-        }
-      });
-    };
-
-    loadGoogleMaps();
-  }, []);
 
   return (
     <div className="p-6">
@@ -64,11 +38,6 @@ const Profile = () => {
         {userInfo.profilePicture && (
           <img src={userInfo.profilePicture} alt="Profile" className="w-24 h-24 rounded-full mb-4" />
         )}
-
-        <label className="bg-blue-500 text-white py-2 px-4 rounded mb-4 cursor-pointer inline-block">
-          Upload Profile Picture
-          <input type="file" accept="image/*" onChange={handleProfilePictureUpload} className="hidden" />
-        </label>
 
         <input 
           type="text" 
@@ -96,20 +65,29 @@ const Profile = () => {
           placeholder="Bio"
         />
 
-        <input 
-          type="text" 
-          id="location-input"
-          name="location" 
-          value={userInfo.location} 
-          onChange={handleChange} 
-          className="w-full mb-2 p-2 border border-gray-300 rounded"
-          placeholder="Enter your location"
-        />
-
         <button onClick={toggleSellerMode} className="bg-blue-500 text-white py-2 px-4 rounded mt-2">
           {isSeller ? 'Switch to Buyer Mode' : 'Switch to Seller Mode'}
         </button>
       </div>
+
+      {isSeller && (
+        <div>
+          <CreateListing addListing={addListing} />
+
+          <div className="bg-white p-4 rounded-2xl shadow mb-6">
+            <h2 className="text-xl font-bold mb-2">My Listings</h2>
+            {listings.map((listing, index) => (
+              <div key={index} className="p-2 mb-2 border-b">
+                <h3 className="font-bold">{listing.name}</h3>
+                <p>{listing.price}</p>
+                {listing.image && (
+                  <img src={listing.image} alt="Product" className="w-32 h-32 rounded mb-2" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
