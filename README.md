@@ -1,5 +1,6 @@
 # wildhacks-2025
-WildHacks 2025: Agriculture Track
+WildHacks 2025: FarmFresh (Agriculture Track)
+Contibutions by Ian Cheng, Darrel Zhao, Chris Zhou, Isaiah Hashimoto
 
 # FarmFresh
 
