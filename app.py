@@ -1,23 +1,23 @@
 # app.py
 
+from flask import Flask, request, jsonify
 import firebase_admin
-from flask import Flask, jsonify, request
 from firebase_admin import credentials, firestore
 from datetime import datetime
 from flask_cors import CORS
 from gemini_prompt import generate_recipe
+import os
+import requests
+from math import radians, cos, sin, sqrt, atan2
 
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
+# Initialize Flask app
 app = Flask(__name__)
 
-cred = credentials.Certificate("config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json")
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate('config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json')  # Replace with your key file
 firebase_admin.initialize_app(cred)
-
-# Example route to check if the backend is working
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
-
-# Get Firestore client
 db = firestore.client()
 
 # Allow requests from React frontend
@@ -39,76 +39,160 @@ def generate():
         print("Error generating recipe:", e)  # Print error to terminal
         return jsonify({"error": "Failed to generate recipe"}), 500
 
-# Route to create a new listing
-@app.route('/create-listing', methods=['POST'])
-def create_listing():
-    data = request.get_json()
-    
-    # Extracting data from the request
-    location = data.get('location')
-    time = data.get('time')  # Expected format: "YYYY-MM-DD HH:MM"
-    items = data.get('items')  # List of items in the listing
-    user_id = data.get('user_id')
-    
-    # Create a listing document
-    listing_ref = db.collection('listings').add({
-        'location': location,
-        'time': time,
-        'user_id': user_id,
-        'timestamp': datetime.now()
+def calculate_distance(lat1, lon1, lat2, lon2):
+    # Earth radius in km
+    R = 6371.0
+
+    lat1_r, lon1_r = radians(lat1), radians(lon1)
+    lat2_r, lon2_r = radians(lat2), radians(lon2)
+
+    dlon = lon2_r - lon1_r
+    dlat = lat2_r - lat1_r
+
+    a = sin(dlat / 2)**2 + cos(lat1_r) * cos(lat2_r) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
+
+def geocode_address(address):
+    geocode_url = "https://maps.googleapis.com/maps/api/geocode/json"
+    params = {
+        'address': address,
+        'key': GOOGLE_MAPS_API_KEY
+    }
+    response = requests.get(geocode_url, params=params)
+    data = response.json()
+
+    if data['status'] == 'OK' and data['results']:
+        location = data['results'][0]['geometry']['location']
+        return location['lat'], location['lng']
+    return None, None
+
+def get_lat_lon_from_zip(zip_code):
+    geocode_url = f'https://maps.googleapis.com/maps/api/geocode/json?address={zip_code}&key={GOOGLE_MAPS_API_KEY}'
+    response = requests.get(geocode_url)
+    data = response.json()
+
+    if data['status'] == 'OK':
+        location = data['results'][0]['geometry']['location']
+        return location['lat'], location['lng']
+    else:
+        return None, None
+
+# Add a new user
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    data = request.json
+    uid = data.get('uid')
+    name = data.get('name')
+
+    if not uid or not name:
+        return jsonify({'error': 'UID and name required'}), 400
+
+    user_ref = users_collection.document(uid)
+    user_ref.set({
+        'uid': uid,
+        'name': name,
+        'listings': []
     })
 
-    listing_id = listing_ref.id  # Get the ID of the new listing
-    
-    # Now, create product entries (items being sold) under this listing
-    for item in items:
-        product_data = {
-            'listing_id': listing_id,
-            'name': item['name'],
-            'price': item['price'],
-            'quantity': item['quantity']
-        }
-        db.collection('products').add(product_data)
+    return jsonify({'message': 'User created successfully'}), 201
 
-    return jsonify({"message": "Listing created successfully", "listing_id": listing_id}), 201
+# Add a produce listing event for a user
+@app.route('/add_listing/<uid>', methods=['POST'])
+def add_listing(uid):
+    data = request.json
+    location = data.get('location')
+    time = data.get('time')
+    produce_items = data.get('produce_items')
 
-# Route to get all listings
-@app.route('/listings', methods=['GET'])
-def get_listings():
-    listings_ref = db.collection('listings')
-    listings = listings_ref.stream()
-    
-    listing_data = []
-    for listing in listings:
-        listing_info = listing.to_dict()
-        listing_info['id'] = listing.id  # Include listing ID
-        listing_data.append(listing_info)
-    
-    return jsonify(listing_data)
+    if not all([location, time, produce_items]):
+        return jsonify({'error': 'Location, time, and produce_items required'}), 400
 
-# Route to get details of a single listing and its products
-@app.route('/listing/<listing_id>', methods=['GET'])
-def get_listing_details(listing_id):
-    # Get listing data
-    listing_ref = db.collection('listings').document(listing_id)
-    listing = listing_ref.get()
-    if not listing.exists:
-        return jsonify({"message": "Listing not found"}), 404
-    
-    listing_info = listing.to_dict()
+    # Geocode the address to get lat/lon
+    lat, lon = geocode_address(location)
+    if lat is None or lon is None:
+        return jsonify({'error': 'Invalid location address'}), 400
 
-    # Get all products in this listing
-    products_ref = db.collection('products').where('listing_id', '==', listing_id)
-    products = products_ref.stream()
+    user_ref = users_collection.document(uid)
 
-    product_data = []
-    for product in products:
-        product_info = product.to_dict()
-        product_info['id'] = product.id
-        product_data.append(product_info)
+    listing_event = {
+        'location': location,
+        'lat': lat,
+        'lon': lon,
+        'time': time,
+        'produce_items': produce_items
+    }
 
-    return jsonify({"listing": listing_info, "products": product_data})
+    user_ref.update({
+        'listings': firestore.ArrayUnion([listing_event])
+    })
 
+    print(listing_event)
+    return jsonify({'message': 'Listing added successfully'}), 200
+
+# Fetch user details and listings
+@app.route('/user/<uid>', methods=['GET'])
+def get_user(uid):
+    user_ref = users_collection.document(uid)
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify(user_doc.to_dict()), 200
+
+# Query listings based on produce name and zip code
+@app.route('/query_produce', methods=['GET'])
+def query_produce():
+    produce_name = request.args.get('produce')  # Now optional
+    zip_code = request.args.get('zip')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+
+    # Determine coordinates
+    if zip_code:
+        user_lat, user_lon = get_lat_lon_from_zip(zip_code)
+        if user_lat is None:
+            return jsonify({'error': 'Invalid ZIP code or failed to get coordinates from Google Maps'}), 400
+    else:
+        try:
+            user_lat = float(lat)
+            user_lon = float(lon)
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Provide a valid ZIP code or lat/lon query parameters'}), 400
+
+    limit = int(request.args.get('limit', 5))
+
+    users = users_collection.stream()
+    matching_listings = []
+
+    for user in users:
+        user_data = user.to_dict()
+        for event in user_data.get('listings', []):
+            matched_items = []
+            for item in event.get('produce_items', []):
+                if not produce_name or produce_name.lower() in item.get('name', '').lower():
+                    matched_items.append(item)
+
+            if matched_items:
+                dist = calculate_distance(user_lat, user_lon, event['lat'], event['lon'])
+                matching_listings.append({
+                    'uid': user_data['uid'],
+                    'name': user_data['name'],
+                    'location': event['location'],
+                    'time': event['time'],
+                    'produce_items': matched_items,
+                    'distance_miles': round((dist * 0.621371), 2),
+                    'lat': event['lat'],
+                    'lon': event['lon']
+                })
+
+    matching_listings.sort(key=lambda x: x['distance_miles'])
+    return jsonify({'matching_listings': matching_listings[:limit]}), 200
+
+
+
+# Run Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    app.run(debug=True, port=5000)

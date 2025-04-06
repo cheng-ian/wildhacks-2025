@@ -1,91 +1,84 @@
-# test_app.py
-import unittest
+import requests
 import json
-from app import app  # Import the Flask app
 
-class FlaskTestCase(unittest.TestCase):
-    
-    # Set up the test client
-    def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True  # Set the app to testing mode
-    
-    # Test /create-listing route (POST)
-    def test_create_listing(self):
-        # Data to be sent in the POST request
-        data = {
-            "location": "Park Avenue",
-            "time": "2025-04-10 14:00",
-            "items": [
-                {"name": "Tomato", "price": 3.99, "quantity": 10},
-                {"name": "Lettuce", "price": 2.49, "quantity": 5}
-            ],
-            "user_id": "test_user_123"
-        }
-        
-        # Send POST request to create a listing
-        response = self.app.post('/create-listing', data=json.dumps(data), content_type='application/json')
-        
-        # Check the status code and message
-        self.assertEqual(response.status_code, 201)
-        response_json = json.loads(response.data)
-        self.assertIn('Listing created successfully', response_json['message'])
-        self.assertIn('listing_id', response_json)
-    
-    # Test /listings route (GET)
-    def test_get_listings(self):
-        # Send GET request to retrieve all listings
-        response = self.app.get('/listings')
-        
-        # Check the status code
-        self.assertEqual(response.status_code, 200)
-        
-        # Check that the response contains a list of listings
-        response_json = json.loads(response.data)
-        self.assertIsInstance(response_json, list)
-        if len(response_json) > 0:
-            self.assertIn('location', response_json[0])
-            self.assertIn('time', response_json[0])
-            self.assertIn('user_id', response_json[0])
-    
-    # Test /listing/<listing_id> route (GET)
-    def test_get_listing_details(self):
-        # First, create a listing using the same data from the POST request
-        data = {
-            "location": "Park Avenue",
-            "time": "2025-04-10 14:00",
-            "items": [
-                {"name": "Tomato", "price": 3.99, "quantity": 10},
-                {"name": "Lettuce", "price": 2.49, "quantity": 5}
-            ],
-            "user_id": "test_user_123"
-        }
-        
-        response = self.app.post('/create-listing', data=json.dumps(data), content_type='application/json')
-        response_json = json.loads(response.data)
-        listing_id = response_json['listing_id']  # Extract listing_id from the response
-        
-        # Send GET request to fetch the details of the created listing
-        response = self.app.get(f'/listing/{listing_id}')
-        
-        # Check the status code
-        self.assertEqual(response.status_code, 200)
-        
-        # Check that the response contains the listing details and products
-        response_json = json.loads(response.data)
-        self.assertIn('listing', response_json)
-        self.assertIn('products', response_json)
-        self.assertGreater(len(response_json['products']), 0)
-    
-    # Test invalid listing ID for /listing/<listing_id> route (GET)
-    def test_get_listing_details_invalid(self):
-        # Send GET request with a non-existent listing ID
-        response = self.app.get('/listing/nonexistent_id')
-        
-        # Check the status code and message
-        self.assertEqual(response.status_code, 404)
-        response_json = json.loads(response.data)
-        self.assertIn('Listing not found', response_json['message'])
+BASE_URL = 'http://127.0.0.1:5000'
 
+# Test data
+user_data = {
+    'uid': 'user123',
+    'name': 'Alice'
+}
+
+listing_data = {
+    'location': '2420 N Campus Dr, Evanston, IL',
+    'time': '2025-04-10T10:00:00',
+    'produce_items': [
+        {'name': 'Tomatoes', 'price': '$2 per lb'},
+        {'name': 'Potatoes', 'price': '$1 per lb'}
+    ]
+}
+
+listing_data2 = {
+    'location': '815 Noyes St, Evanston, IL 60201',
+    'time': '2025-04-10T10:00:00',
+    'produce_items': [
+        {'name': 'Tomatoes', 'price': '$2 per lb'},
+        {'name': 'Pogatoes', 'price': '$1 per lb'}
+    ]
+}
+
+listing_data3 = {
+    'location': '9599 Skokie Blvd, Skokie, IL 60077',
+    'time': '2025-04-10T10:00:00',
+    'produce_items': [
+        {'name': 'Togatoes', 'price': '$2 per lb'},
+        {'name': 'Popatoes', 'price': '$1 per lb'}
+    ]
+}
+
+# Add user
+def test_add_user():
+    response = requests.post(f'{BASE_URL}/add_user', json=user_data)
+    print('Add User:', response.status_code, response.json())
+
+# Add listings
+def test_add_listing():
+    for i, listing in enumerate([listing_data, listing_data2, listing_data3], start=1):
+        response = requests.post(f'{BASE_URL}/add_listing/{user_data["uid"]}', json=listing)
+        print(f'Add Listing {i}:', response.status_code, response.json())
+
+# Get user
+def test_get_user():
+    response = requests.get(f'{BASE_URL}/user/{user_data["uid"]}')
+    print('Get User:', response.status_code)
+    print(json.dumps(response.json(), indent=2))
+
+# Query produce with and without filter
+def test_query_produce():
+    zip_code = '60201'  # Evanston ZIP
+
+    # Case 1: All listings near ZIP (no filter)
+    params_no_filter = {
+        'zip': zip_code,
+        'limit': 5
+    }
+    response = requests.get(f'{BASE_URL}/query_produce', params=params_no_filter)
+    print('\nQuery Produce (no filter):', response.status_code)
+    print(json.dumps(response.json(), indent=2))
+
+    # Case 2: Listings near ZIP with produce filter
+    params_with_filter = {
+        'zip': zip_code,
+        'limit': 5,
+        'produce': 'Tomatoes'
+    }
+    response = requests.get(f'{BASE_URL}/query_produce', params=params_with_filter)
+    print('\nQuery Produce (filtered by Tomatoes):', response.status_code)
+    print(json.dumps(response.json(), indent=2))
+
+# Run all tests
 if __name__ == '__main__':
-    unittest.main()
+    test_add_user()
+    test_add_listing()
+    test_get_user()
+    test_query_produce()
