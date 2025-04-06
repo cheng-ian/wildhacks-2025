@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { apiService } from './services/api';
 
 const Marketplace = () => {
-  const [location, setLocation] = useState('');
+  const [searchParams] = useSearchParams();
+  const [location, setLocation] = useState(searchParams.get('zip') || '');
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('produce') || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 41.8781, lng: -87.6298 }); // Default to Chicago
@@ -77,6 +79,13 @@ const Marketplace = () => {
     }
   }, [listings, mapCenter]); // Update markers when listings or center changes
 
+  useEffect(() => {
+    // If we have a zip code and search query from URL, perform the search
+    if (location && searchQuery) {
+      handleLocationSubmit(null, true);
+    }
+  }, []); // Run only once on component mount
+
   const initMap = () => {
     if (!mapRef.current) return;
 
@@ -99,8 +108,10 @@ const Marketplace = () => {
     setFilteredListings(filtered);
   };
 
-  const handleLocationSubmit = async (e) => {
-    e.preventDefault();
+  const handleLocationSubmit = async (e, isInitialLoad = false) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!location) return;
 
     try {

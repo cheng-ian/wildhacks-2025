@@ -63,4 +63,10 @@ export const apiService = {
         const response = await fetch(`${API_BASE_URL}/query_produce?${params}`);
         return handleResponse(response);
     },
+
+    // Get most sold products
+    getMostSoldProducts: async (limit = 10) => {
+        const response = await fetch(`${API_BASE_URL}/most_sold_products?limit=${limit}`);
+        return handleResponse(response);
+    },
 }; 

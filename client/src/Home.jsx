@@ -1,49 +1,51 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiService } from './services/api';
 
 const Home = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [featuredListings, setFeaturedListings] = useState([]);
+  const [mostSoldProducts, setMostSoldProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [zipCode, setZipCode] = useState('');
+  const [showZipModal, setShowZipModal] = useState(false);
 
-  // Placeholder listings for now
   useEffect(() => {
-    const fetchListings = async () => {
-      const placeholderListings = [
-        {
-          id: 1,
-          name: 'Fresh Flowers',
-          description: 'Available now at Green Meadows Farm',
-          image: '/images/flowers.jpg'
-        },
-        {
-          id: 2,
-          name: 'Strawberries',
-          description: 'Picked fresh this morning at Flora Market',
-          image: '/images/strawberries.jpg'
-        },
-        {
-          id: 3,
-          name: 'Organic Potatoes',
-          description: 'Locally grown at Sunrise Farms',
-          image: '/images/potatoes.jpg'
+    const fetchMostSoldProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getMostSoldProducts(9);
+        if (response.products) {
+          setMostSoldProducts(response.products);
         }
-      ];
-
-      setFeaturedListings(placeholderListings);
+      } catch (err) {
+        setError('Failed to load most sold products');
+        console.error('Error fetching most sold products:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchListings();
+    fetchMostSoldProducts();
   }, []);
-
-  const recommendedProducts = [
-    { name: 'Flowers', image: '/images/flowers.jpg' },
-    { name: 'Potatoes', image: '/images/potatoes.jpg' },
-    { name: 'Strawberries', image: '/images/strawberries.jpg' },
-    { name: 'Dairy', image: '/images/dairy.jpg' },
-    { name: 'Vegetables', image: '/images/vegetables.jpg' }
-  ];
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setShowZipModal(true);
+  };
+
+  const handleZipSubmit = (e) => {
+    e.preventDefault();
+    if (zipCode && selectedProduct) {
+      // Redirect to marketplace with search parameters
+      navigate(`/marketplace?zip=${zipCode}&produce=${selectedProduct.name}`);
+    }
   };
 
   return (
@@ -59,46 +61,91 @@ const Home = () => {
         className="w-full p-3 border border-gray-300 rounded mb-4"
       />
 
-      {/* Recommended Products */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-2">Recommended Products</h2>
-        <div className="flex overflow-x-auto space-x-4">
-          {recommendedProducts.map((product, index) => (
-            <div key={index} className="min-w-[150px] bg-white p-4 rounded-2xl shadow cursor-pointer">
-              <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded mb-2" />
-              <h3 className="text-center font-bold">{product.name}</h3>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Featured Listings */}
+      {/* Most Sold Products Section */}
       <div className="bg-white p-4 rounded-2xl shadow mb-6">
-        <h2 className="text-xl font-bold mb-2">Featured Listings</h2>
-        {featuredListings.map((listing) => (
-          <div key={listing.id} className="p-2 mb-2">
-            <div className="flex items-center space-x-4">
-              <img src={listing.image} alt={listing.name} className="w-20 h-20 object-cover rounded" />
-              <div>
-                <h3 className="font-bold">{listing.name}</h3>
-                <p>{listing.description}</p>
+        <h2 className="text-xl font-bold mb-4">Most Popular Products</h2>
+        
+        {loading ? (
+          <p className="text-gray-500">Loading popular products...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : mostSoldProducts.length === 0 ? (
+          <p className="text-gray-500">No products found.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mostSoldProducts.map((product, index) => (
+              <div 
+                key={index} 
+                className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={() => handleProductClick(product)}
+              >
+                <h3 className="font-bold text-lg capitalize">{product.name}</h3>
+                <p className="text-gray-600">Listed {product.count} times</p>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Categories Section */}
-      <div className="bg-white p-4 rounded-2xl shadow">
-        <h2 className="text-xl font-bold mb-2">Categories</h2>
-        <div className="flex space-x-4">
-          {['Fruits', 'Vegetables', 'Dairy', 'Flowers', 'Other'].map((category) => (
-            <button key={category} className="bg-blue-500 text-white py-2 px-4 rounded">
-              {category}
-            </button>
-          ))}
+      {/* Quick Links Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-green-50 p-4 rounded-2xl border border-green-100">
+          <h2 className="font-bold text-lg mb-2">Find Local Sellers</h2>
+          <p className="text-gray-700 mb-2">Looking for fresh produce?</p>
+          <ul className="list-disc list-inside text-gray-700">
+            <li>Search by ZIP code</li>
+            <li>Find nearby farmers</li>
+            <li>Get the freshest ingredients</li>
+          </ul>
+        </div>
+        
+        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+          <h2 className="font-bold text-lg mb-2">Recipe Search</h2>
+          <p className="text-gray-700 mb-2">Need cooking inspiration?</p>
+          <ul className="list-disc list-inside text-gray-700">
+            <li>Search for recipes</li>
+            <li>Get ingredient lists</li>
+            <li>Find local ingredients</li>
+          </ul>
         </div>
       </div>
+
+      {/* ZIP Code Modal */}
+      {showZipModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">Find {selectedProduct?.name} near you</h2>
+            <form onSubmit={handleZipSubmit}>
+              <input
+                type="text"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
+                placeholder="Enter your ZIP code"
+                className="w-full p-3 border border-gray-300 rounded mb-4"
+                required
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowZipModal(false);
+                    setZipCode('');
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -225,6 +225,33 @@ def query_produce():
         print(f"Error in query_produce: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+# Get most sold products from listings
+@app.route('/most_sold_products', methods=['GET'])
+def get_most_sold_products():
+    try:
+        limit = int(request.args.get('limit', 10))
+        users = users_collection.stream()
+        
+        # Count occurrences of each product
+        product_counts = {}
+        
+        for user in users:
+            user_data = user.to_dict()
+            for listing in user_data.get('listings', []):
+                for item in listing.get('produce_items', []):
+                    product_name = item.get('name', '').lower()
+                    if product_name:
+                        product_counts[product_name] = product_counts.get(product_name, 0) + 1
+        
+        # Sort products by count and get top N
+        sorted_products = sorted(product_counts.items(), key=lambda x: x[1], reverse=True)
+        top_products = [{'name': name, 'count': count} for name, count in sorted_products[:limit]]
+        
+        return jsonify({'products': top_products}), 200
+    except Exception as e:
+        print(f"Error getting most sold products: {str(e)}")
+        return jsonify({'error': 'Failed to get most sold products'}), 500
+
 # Run Flask app
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
