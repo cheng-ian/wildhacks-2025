@@ -6,8 +6,12 @@ const Search = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/generate', {
         query: searchQuery,
@@ -53,6 +57,8 @@ const Search = () => {
     } catch (error) {
       console.error('Error calling backend:', error);
       setSearchResults("Error generating recipe.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,35 +75,38 @@ const Search = () => {
           onChange={(e) => setSearchQuery(e.target.value)} 
           placeholder="e.g., I want to make steak for dinner" 
           className="w-full p-3 border border-gray-300 rounded-l-2xl shadow focus:outline-none"
+          disabled={isLoading}
         />
         <button 
           onClick={handleSearch} 
-          className="bg-blue-500 text-white p-3 rounded-r-2xl hover:bg-blue-600 transition"
+          className="bg-blue-500 text-white p-3 rounded-r-2xl hover:bg-blue-600 transition disabled:bg-blue-300"
+          disabled={isLoading}
         >
-          Search
+          {isLoading ? 'Generating...' : 'Search'}
         </button>
       </div>
 
-      <div className="bg-gray-100 p-4 rounded-2xl mb-6">
-        <h2 className="font-bold text-lg mb-2">Try These Queries:</h2>
-        <ul className="list-disc list-inside text-gray-700">
-          <li>I want to make steak for dinner</li>
-          <li>Find recipes with strawberries</li>
-          <li>What can I cook with potatoes?</li>
-          <li>Suggest vegetarian dinner ideas</li>
-        </ul>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gray-100 p-4 rounded-2xl mb-6">
+          <h2 className="font-bold text-lg mb-2">Try These Queries:</h2>
+          <ul className="list-disc list-inside text-gray-700">
+            <li>I want to make steak for dinner</li>
+            <li>Find recipes with strawberries</li>
+            <li>What can I cook with potatoes?</li>
+            <li>Suggest vegetarian dinner ideas</li>
+          </ul>
+        </div>
+        
+        <div className="bg-green-50 p-4 rounded-2xl mb-6 border border-green-100">
+          <h2 className="font-bold text-lg mb-2">Find Local Ingredients!</h2>
+          <p className="text-gray-700 mb-2">After generating a recipe, you can:</p>
+          <ul className="list-disc list-inside text-gray-700">
+            <li>Enter your ZIP code to find local sellers</li>
+            <li>See which ingredients are available nearby</li>
+            <li>Support local farmers and get the freshest produce</li>
+          </ul>
+        </div>
       </div>
-
-      {/* {searchResults && (
-        <ul className="list-disc list-inside">
-        {searchResults.map((item, index) => (
-          <li key={index}>
-            {item.ingredient}: {item.amount}
-          </li>
-        ))}
-      </ul>
-      
-      )} */}
 
       <p className="text-gray-500 text-sm mt-4">Powered by Gemini API</p>
     </div>
