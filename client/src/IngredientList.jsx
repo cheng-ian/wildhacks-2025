@@ -10,18 +10,6 @@ const IngredientList = () => {
   const [zipCode, setZipCode] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const formatDateTime = (dateTimeStr) => {
-    const date = new Date(dateTimeStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-  
   const findLocalSellers = async () => {
     if (!zipCode.trim()) return;
     
@@ -91,9 +79,6 @@ const IngredientList = () => {
                         {localSellers[item.ingredient].slice(0, 3).map((seller, sellerIndex) => (
                           <li key={sellerIndex} className="ml-2">
                             {seller.name} - {seller.distance_miles} miles away
-                            <div className="text-xs text-gray-500 ml-4">
-                              Available: {formatDateTime(seller.time)}
-                            </div>
                           </li>
                         ))}
                       </ul>
@@ -128,7 +113,6 @@ const IngredientList = () => {
                       <h4 className="font-bold">{seller.name}</h4>
                       <p className="text-sm text-gray-600">Location: {seller.location}</p>
                       <p className="text-sm text-gray-600">Distance: {seller.distance_miles} miles</p>
-                      <p className="text-sm text-gray-600">Time: {formatDateTime(seller.time)}</p>
                       <p className="text-sm text-gray-600 mt-1">Available items:</p>
                       <ul className="list-disc list-inside text-sm text-gray-700">
                         {seller.produce_items.map((item, itemIndex) => (

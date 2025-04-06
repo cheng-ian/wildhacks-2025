@@ -2,13 +2,14 @@
 
 from flask import Flask, request, jsonify
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 from datetime import datetime
 from flask_cors import CORS
 from gemini_prompt import generate_recipe
 import os
 import requests
 from math import radians, cos, sin, sqrt, atan2
+from functools import wraps
 
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
@@ -31,6 +32,40 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
+# Firebase Authentication Middleware
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Get the auth token from the request header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'error': 'Authorization header is missing'}), 401
+        
+        # Extract the token
+        token = auth_header.split("Bearer ")[1] if "Bearer " in auth_header else auth_header
+        
+        try:
+            # Verify the token
+            decoded_token = auth.verify_id_token(token)
+            # Add the user's UID to the request
+            request.user = decoded_token
+            return f(*args, **kwargs)
+        except Exception as e:
+            print(f"Authentication error: {e}")
+            return jsonify({'error': 'Invalid authentication token'}), 401
+    
+    return decorated
+
+@app.route('/verify-auth', methods=['GET'])
+@token_required
+def verify_auth():
+    """Verify a user's authentication status"""
+    return jsonify({
+        'authenticated': True,
+        'uid': request.user['uid'],
+        'email': request.user.get('email', ''),
+    })
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -98,18 +133,33 @@ def add_user():
     if not uid or not name:
         return jsonify({'error': 'UID and name required'}), 400
 
+    # Check if user already exists
     user_ref = users_collection.document(uid)
-    user_ref.set({
-        'uid': uid,
-        'name': name,
-        'listings': []
-    })
-
-    return jsonify({'message': 'User created successfully'}), 201
+    user_doc = user_ref.get()
+    
+    if user_doc.exists:
+        # Update user if needed
+        user_ref.update({
+            'name': name,
+        })
+        return jsonify({'message': 'User updated successfully'}), 200
+    else:
+        # Create new user
+        user_ref.set({
+            'uid': uid,
+            'name': name,
+            'listings': []
+        })
+        return jsonify({'message': 'User created successfully'}), 201
 
 # Add a produce listing event for a user
 @app.route('/add_listing/<uid>', methods=['POST'])
+@token_required
 def add_listing(uid):
+    # Verify the authenticated user is adding their own listing
+    if request.user['uid'] != uid:
+        return jsonify({'error': 'Not authorized to add listings for this user'}), 403
+        
     data = request.json
     location = data.get('location')
     time = data.get('time')
@@ -250,7 +300,7 @@ def get_most_sold_products():
         return jsonify({'products': top_products}), 200
     except Exception as e:
         print(f"Error getting most sold products: {str(e)}")
-        return jsonify({'error': 'Failed to get most sold products'}), 500
+        return jsonify({'error': 'Failed to retrieve most sold products'}), 500
 
 # Run Flask app
 if __name__ == '__main__':
