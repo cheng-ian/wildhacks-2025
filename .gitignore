@@ -1,3 +1,4 @@
 # Ignore Firebase Admin SDK JSON file
 config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json
 .env
+node_modules

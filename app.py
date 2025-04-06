@@ -20,8 +20,17 @@ cred = credentials.Certificate('config/wildhacks-2025-cf527-firebase-adminsdk-fb
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# Allow requests from React frontend
-CORS(app)
+# Initialize Firestore collections
+users_collection = db.collection('users')
+
+# Configure CORS with specific settings
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000"],  # React's default port
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -145,53 +154,76 @@ def get_user(uid):
 # Query listings based on produce name and zip code
 @app.route('/query_produce', methods=['GET'])
 def query_produce():
-    produce_name = request.args.get('produce')  # Now optional
-    zip_code = request.args.get('zip')
-    lat = request.args.get('lat')
-    lon = request.args.get('lon')
+    try:
+        produce_name = request.args.get('produce')  # Now optional
+        zip_code = request.args.get('zip')
+        lat = request.args.get('lat')
+        lon = request.args.get('lon')
 
-    # Determine coordinates
-    if zip_code:
-        user_lat, user_lon = get_lat_lon_from_zip(zip_code)
-        if user_lat is None:
-            return jsonify({'error': 'Invalid ZIP code or failed to get coordinates from Google Maps'}), 400
-    else:
+        print(f"Received query with params: produce={produce_name}, zip={zip_code}, lat={lat}, lon={lon}")
+
+        # Determine coordinates
+        if zip_code:
+            user_lat, user_lon = get_lat_lon_from_zip(zip_code)
+            if user_lat is None:
+                print(f"Failed to get coordinates for ZIP code: {zip_code}")
+                return jsonify({'error': 'Invalid ZIP code or failed to get coordinates from Google Maps'}), 400
+        else:
+            try:
+                user_lat = float(lat)
+                user_lon = float(lon)
+            except (TypeError, ValueError):
+                print(f"Invalid lat/lon values: lat={lat}, lon={lon}")
+                return jsonify({'error': 'Provide a valid ZIP code or lat/lon query parameters'}), 400
+
+        limit = int(request.args.get('limit', 5))
+
         try:
-            user_lat = float(lat)
-            user_lon = float(lon)
-        except (TypeError, ValueError):
-            return jsonify({'error': 'Provide a valid ZIP code or lat/lon query parameters'}), 400
+            users = users_collection.stream()
+            matching_listings = []
 
-    limit = int(request.args.get('limit', 5))
+            for user in users:
+                try:
+                    user_data = user.to_dict()
+                    print(f"Processing user: {user_data.get('name', 'Unknown')}")
+                    
+                    for event in user_data.get('listings', []):
+                        try:
+                            matched_items = []
+                            for item in event.get('produce_items', []):
+                                if not produce_name or produce_name.lower() in item.get('name', '').lower():
+                                    matched_items.append(item)
 
-    users = users_collection.stream()
-    matching_listings = []
+                            if matched_items:
+                                dist = calculate_distance(user_lat, user_lon, event['lat'], event['lon'])
+                                matching_listings.append({
+                                    'uid': user_data['uid'],
+                                    'name': user_data['name'],
+                                    'location': event['location'],
+                                    'time': event['time'],
+                                    'produce_items': matched_items,
+                                    'distance_miles': round((dist * 0.621371), 2),
+                                    'lat': event['lat'],
+                                    'lon': event['lon']
+                                })
+                        except Exception as e:
+                            print(f"Error processing event: {str(e)}")
+                            continue
+                except Exception as e:
+                    print(f"Error processing user: {str(e)}")
+                    continue
 
-    for user in users:
-        user_data = user.to_dict()
-        for event in user_data.get('listings', []):
-            matched_items = []
-            for item in event.get('produce_items', []):
-                if not produce_name or produce_name.lower() in item.get('name', '').lower():
-                    matched_items.append(item)
+            matching_listings.sort(key=lambda x: x['distance_miles'])
+            print(f"Returning {len(matching_listings)} matching listings")
+            return jsonify({'matching_listings': matching_listings[:limit]}), 200
 
-            if matched_items:
-                dist = calculate_distance(user_lat, user_lon, event['lat'], event['lon'])
-                matching_listings.append({
-                    'uid': user_data['uid'],
-                    'name': user_data['name'],
-                    'location': event['location'],
-                    'time': event['time'],
-                    'produce_items': matched_items,
-                    'distance_miles': round((dist * 0.621371), 2),
-                    'lat': event['lat'],
-                    'lon': event['lon']
-                })
+        except Exception as e:
+            print(f"Error accessing Firestore: {str(e)}")
+            return jsonify({'error': 'Error accessing database'}), 500
 
-    matching_listings.sort(key=lambda x: x['distance_miles'])
-    return jsonify({'matching_listings': matching_listings[:limit]}), 200
-
-
+    except Exception as e:
+        print(f"Error in query_produce: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 # Run Flask app
 if __name__ == '__main__':
