@@ -176,7 +176,7 @@ def query_produce():
                 print(f"Invalid lat/lon values: lat={lat}, lon={lon}")
                 return jsonify({'error': 'Provide a valid ZIP code or lat/lon query parameters'}), 400
 
-        limit = int(request.args.get('limit', 5))
+        limit = int(request.args.get('limit', 20))
 
         try:
             users = users_collection.stream()

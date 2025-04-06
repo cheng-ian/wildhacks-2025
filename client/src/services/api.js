@@ -52,7 +52,7 @@ export const apiService = {
     },
 
     // Query produce listings
-    queryProduce: async (produce, zip, lat, lon, limit = 5) => {
+    queryProduce: async (produce, zip, lat, lon, limit = 20) => {
         const params = new URLSearchParams();
         if (produce) params.append('produce', produce);
         if (zip) params.append('zip', zip);
