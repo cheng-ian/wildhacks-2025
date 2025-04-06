@@ -6,23 +6,15 @@ const Search = () => {
   const [searchResults, setSearchResults] = useState(null);
 
   const handleSearch = async () => {
-    const apiKey = 'YOUR_API_KEY';  // Replace with your actual API key
-    const apiUrl = 'https://gemini.googleapis.com/v1/query';  // Example endpoint
-
     try {
-      const response = await axios.post(apiUrl, {
+      const response = await axios.post('http://localhost:5000/generate', {
         query: searchQuery,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
       });
-
-      setSearchResults(response.data);
+  
+      setSearchResults(response.data.result); // show Gemini's output
     } catch (error) {
-      console.error('Error fetching from Gemini API:', error);
-      setSearchResults(null);
+      console.error('Error calling backend:', error);
+      setSearchResults("Error generating recipe.");
     }
   };
 
@@ -64,6 +56,8 @@ const Search = () => {
           <pre>{JSON.stringify(searchResults, null, 2)}</pre>
         </div>
       )}
+
+      <p className="text-gray-500 text-sm mt-4">Powered by Gemini API</p>
     </div>
   );
 };

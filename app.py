@@ -4,10 +4,12 @@ import firebase_admin
 from flask import Flask, jsonify, request
 from firebase_admin import credentials, firestore
 from datetime import datetime
+from flask_cors import CORS
+from gemini_prompt import generate_recipe
 
 app = Flask(__name__)
 
-cred = credentials.Certificate("")
+cred = credentials.Certificate("config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json")
 firebase_admin.initialize_app(cred)
 
 # Example route to check if the backend is working
@@ -17,6 +19,25 @@ def hello_world():
 
 # Get Firestore client
 db = firestore.client()
+
+# Allow requests from React frontend
+CORS(app)
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    data = request.json
+    user_input = data.get('query')
+    print("Received input:", user_input)
+
+    if not user_input:
+        return jsonify({"error": "No query provided"}), 400
+
+    try:
+        result = generate_recipe(user_input)
+        return jsonify({"result": result})
+    except Exception as e:
+        print("Error generating recipe:", e)  # Print error to terminal
+        return jsonify({"error": "Failed to generate recipe"}), 500
 
 # Route to create a new listing
 @app.route('/create-listing', methods=['POST'])
