@@ -63,7 +63,7 @@ const Search = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
       <div className="p-6 max-w-5xl w-full">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 text-green-800">Let us cook.</h1>
@@ -81,7 +81,7 @@ const Search = () => {
             />
             <button 
               onClick={handleSearch} 
-              className="bg-yellow-500 text-gray-900 font-semibold p-4 rounded-r-2xl hover:bg-yellow-600 transition disabled:bg-yellow-300 shadow-sm"
+              className="bg-green-600 text-white font-semibold p-4 rounded-r-2xl hover:bg-green-700 transition disabled:bg-green-300 shadow-sm"
               disabled={isLoading}
             >
               {isLoading ? 'Generating...' : 'Search'}

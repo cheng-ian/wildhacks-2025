@@ -169,159 +169,161 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-3 text-green-700">Marketplace</h1>
-      
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Find produce near you</label>
-          <form onSubmit={handleLocationSubmit}>
-            <div className="grid grid-cols-12 gap-3">
-              <div className="col-span-12 md:col-span-5">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Enter ZIP code (required)"
-                    className="w-full p-2.5 pl-10 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="col-span-12 md:col-span-5">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    placeholder="Search by produce name (optional)"
-                    className="w-full p-2.5 pl-10 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="col-span-12 md:col-span-2">
-                <button
-                  type="submit"
-                  className="w-full bg-green-600 text-white p-2.5 rounded hover:bg-green-700 transition-colors flex items-center justify-center"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Searching
-                    </span>
-                  ) : (
-                    <span>Find Produce</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded mb-3">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[600px]">
-        <div className="lg:col-span-3 bg-white rounded-lg shadow-sm overflow-hidden h-full">
-          <div className="bg-green-600 text-white p-2 px-3">
-            <h2 className="text-lg font-bold">Map View</h2>
-          </div>
-          <div ref={mapRef} className="w-full h-[calc(100%-40px)]"></div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      <div className="max-w-7xl mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-3 text-green-700">Marketplace</h1>
         
-        <div className="lg:col-span-2 h-full">
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full flex flex-col">
-            <div className="bg-green-600 text-white p-2 px-3">
-              <h2 className="text-lg font-bold">Available Listings</h2>
-            </div>
-            <div className="overflow-y-auto flex-grow max-h-[calc(600px-40px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {filteredListings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                  <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
-                  </svg>
-                  <p className="text-gray-500 text-lg font-medium">No listings found</p>
-                  <p className="text-gray-400 mt-1">Try searching with a different ZIP code</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-200">
-                  {filteredListings.map((listing, index) => (
-                    <div 
-                      key={index} 
-                      className="p-3 hover:bg-green-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <Link 
-                          to={`/seller/${listing.user_id}`}
-                          className="font-bold text-lg text-green-700 hover:text-green-900 hover:underline"
-                        >
-                          {listing.user_name || 'Unknown Seller'}
-                        </Link>
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                          {listing.distance_miles} miles
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-1 text-sm mt-1">
-                        <p className="text-gray-600">
-                          <span className="font-semibold">Location:</span> {listing.location}
-                        </p>
-                        <p className="text-gray-600">
-                          <span className="font-semibold">When:</span> {formatDateTime(listing.time)}
-                        </p>
-                        <p className="text-gray-600 col-span-2">
-                          <span className="font-semibold">Items:</span> {listing.produce_items.length}
-                        </p>
-                      </div>
-                      <div className="mt-3">
-                        <p className="font-semibold text-sm text-gray-700">Available Produce:</p>
-                        <ul className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {listing.produce_items.map((item, idx) => (
-                            <li key={idx} className="flex justify-between items-center bg-green-50 rounded p-2 text-sm">
-                              <span>{item.name} {item.quantity} {item.unit}</span>
-                              <span className="font-semibold">{item.price}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="mt-3 text-right">
-                        <Link 
-                          to={`/seller/${listing.user_id}`}
-                          className="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center"
-                        >
-                          View all listings from this seller
-                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                          </svg>
-                        </Link>
-                      </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+          <div className="mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Find produce near you</label>
+            <form onSubmit={handleLocationSubmit}>
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-12 md:col-span-5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Enter ZIP code (required)"
+                      className="w-full p-2.5 pl-10 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      required
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+                
+                <div className="col-span-12 md:col-span-5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      placeholder="Search by produce name (optional)"
+                      className="w-full p-2.5 pl-10 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-span-12 md:col-span-2">
+                  <button
+                    type="submit"
+                    className="w-full bg-green-600 text-white p-2.5 rounded hover:bg-green-700 transition-colors flex items-center justify-center"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Searching
+                      </span>
+                    ) : (
+                      <span>Find Produce</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded mb-3">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[600px]">
+          <div className="lg:col-span-3 bg-white rounded-lg shadow-sm overflow-hidden h-full">
+            <div className="bg-green-600 text-white p-2 px-3">
+              <h2 className="text-lg font-bold">Map View</h2>
+            </div>
+            <div ref={mapRef} className="w-full h-[calc(100%-40px)]"></div>
+          </div>
+          
+          <div className="lg:col-span-2 h-full">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full flex flex-col">
+              <div className="bg-green-600 text-white p-2 px-3">
+                <h2 className="text-lg font-bold">Available Listings</h2>
+              </div>
+              <div className="overflow-y-auto flex-grow max-h-[calc(600px-40px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                {filteredListings.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                    <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
+                    </svg>
+                    <p className="text-gray-500 text-lg font-medium">No listings found</p>
+                    <p className="text-gray-400 mt-1">Try searching with a different ZIP code</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-200">
+                    {filteredListings.map((listing, index) => (
+                      <div 
+                        key={index} 
+                        className="p-3 hover:bg-green-50 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <Link 
+                            to={`/seller/${listing.user_id}`}
+                            className="font-bold text-lg text-green-700 hover:text-green-900 hover:underline"
+                          >
+                            {listing.user_name || 'Unknown Seller'}
+                          </Link>
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            {listing.distance_miles} miles
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-1 text-sm mt-1">
+                          <p className="text-gray-600">
+                            <span className="font-semibold">Location:</span> {listing.location}
+                          </p>
+                          <p className="text-gray-600">
+                            <span className="font-semibold">When:</span> {formatDateTime(listing.time)}
+                          </p>
+                          <p className="text-gray-600 col-span-2">
+                            <span className="font-semibold">Items:</span> {listing.produce_items.length}
+                          </p>
+                        </div>
+                        <div className="mt-3">
+                          <p className="font-semibold text-sm text-gray-700">Available Produce:</p>
+                          <ul className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {listing.produce_items.map((item, idx) => (
+                              <li key={idx} className="flex justify-between items-center bg-green-50 rounded p-2 text-sm">
+                                <span>{item.name} {item.quantity} {item.unit}</span>
+                                <span className="font-semibold">{item.price}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="mt-3 text-right">
+                          <Link 
+                            to={`/seller/${listing.user_id}`}
+                            className="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center"
+                          >
+                            View all listings from this seller
+                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
