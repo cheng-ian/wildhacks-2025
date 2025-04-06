@@ -19,7 +19,7 @@ const Header = () => {
       <div className="w-full px-2 flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-3">
           <img src={farmFreshLogo} alt="FarmFresh Logo" className="h-12 w-12 object-contain" />
-          <h1 className="text-2xl font-bold text-green-800">FarmFresh</h1>
+          <h1 className="text-2xl font-bold text-green-800">The Neighbor's Table</h1>
         </Link>
         
         <nav className="flex items-center space-x-4 p-4">

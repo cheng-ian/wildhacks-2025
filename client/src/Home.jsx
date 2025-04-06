@@ -105,7 +105,7 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">About Our Marketplace</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              At FarmFresh, we are dedicated to connecting local farmers with their community. Our marketplace offers fresh, seasonal produce while fostering sustainable farming practices and supporting local agriculture.
+              At The Neighbor's Table, we are dedicated to connecting local farmers with their community. Our marketplace offers fresh, seasonal produce while fostering sustainable farming practices and supporting local agriculture.
             </p>
           </div>
         </div>
