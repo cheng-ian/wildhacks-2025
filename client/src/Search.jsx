@@ -63,52 +63,77 @@ const Search = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Search</h1>
-      <p className="mb-4 text-gray-600">Type what you want to make, and we'll find recipes, ingredients, and nearby vendors selling what you need!</p>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="p-6 max-w-5xl w-full">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4 text-green-800">Recipe Search</h1>
+          <p className="mb-8 text-gray-600 text-lg">Type what you want to make, and we'll find recipes, ingredients, and nearby vendors selling what you need!</p>
 
-      {/* Search Bar */}
-      <div className="flex items-center mb-6">
-        <input 
-          type="text" 
-          value={searchQuery} 
-          onChange={(e) => setSearchQuery(e.target.value)} 
-          placeholder="e.g., I want to make steak for dinner" 
-          className="w-full p-3 border border-gray-300 rounded-l-2xl shadow focus:outline-none"
-          disabled={isLoading}
-        />
-        <button 
-          onClick={handleSearch} 
-          className="bg-blue-500 text-white p-3 rounded-r-2xl hover:bg-blue-600 transition disabled:bg-blue-300"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Generating...' : 'Search'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-100 p-4 rounded-2xl mb-6">
-          <h2 className="font-bold text-lg mb-2">Try These Queries:</h2>
-          <ul className="list-disc list-inside text-gray-700">
-            <li>I want to make steak for dinner</li>
-            <li>Find recipes with strawberries</li>
-            <li>What can I cook with potatoes?</li>
-            <li>Suggest vegetarian dinner ideas</li>
-          </ul>
+          {/* Search Bar */}
+          <div className="flex items-center mb-12 max-w-2xl mx-auto">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g., steak dinner with sides" 
+              className="w-full p-4 border border-gray-300 rounded-l-2xl shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              disabled={isLoading}
+            />
+            <button 
+              onClick={handleSearch} 
+              className="bg-yellow-500 text-gray-900 font-semibold p-4 rounded-r-2xl hover:bg-yellow-600 transition disabled:bg-yellow-300 shadow-sm"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Generating...' : 'Search'}
+            </button>
+          </div>
         </div>
-        
-        <div className="bg-green-50 p-4 rounded-2xl mb-6 border border-green-100">
-          <h2 className="font-bold text-lg mb-2">Find Local Ingredients!</h2>
-          <p className="text-gray-700 mb-2">After generating a recipe, you can:</p>
-          <ul className="list-disc list-inside text-gray-700">
-            <li>Enter your ZIP code to find local sellers</li>
-            <li>See which ingredients are available nearby</li>
-            <li>Support local farmers and get the freshest produce</li>
-          </ul>
-        </div>
-      </div>
 
-      <p className="text-gray-500 text-sm mt-4">Powered by Gemini API</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div className="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
+            <h2 className="font-bold text-xl mb-4 text-green-800">Try These Queries:</h2>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                I want to make steak for dinner
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                Find recipes with strawberries
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                What can I cook with potatoes?
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                Suggest vegetarian dinner ideas
+              </li>
+            </ul>
+          </div>
+          
+          <div className="bg-yellow-50 p-6 rounded-2xl shadow-sm border border-yellow-100">
+            <h2 className="font-bold text-xl mb-4 text-yellow-800">Find Local Ingredients!</h2>
+            <p className="text-gray-700 mb-4">After generating a recipe, you can:</p>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                Enter your ZIP code to find local sellers
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                See which ingredients are available nearby
+              </li>
+              <li className="flex items-center">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                Support local farmers and get the freshest produce
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <p className="text-center text-gray-500 text-sm">Powered by Gemini API</p>
+      </div>
     </div>
   );
 };

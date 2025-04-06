@@ -203,7 +203,7 @@ const UserListings = () => {
                               {item.quantity} {item.unit}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                              ${item.price}
+                              {item.price}
                             </td>
                           </tr>
                         ))}

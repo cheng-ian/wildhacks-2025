@@ -301,8 +301,8 @@ const Marketplace = () => {
                         <ul className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
                           {listing.produce_items.map((item, idx) => (
                             <li key={idx} className="flex justify-between items-center bg-green-50 rounded p-2 text-sm">
-                              <span>{item.name} - {item.quantity} {item.unit}</span>
-                              <span className="font-semibold">${item.price}</span>
+                              <span>{item.name} {item.quantity} {item.unit}</span>
+                              <span className="font-semibold">{item.price}</span>
                             </li>
                           ))}
                         </ul>

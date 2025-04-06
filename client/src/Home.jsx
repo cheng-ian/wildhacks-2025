@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from './services/api';
+import farmFreshLogo from './images/farmfresh-logo.png';
 
 const Home = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [zipCode, setZipCode] = useState('');
   const [mostSoldProducts, setMostSoldProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [zipCode, setZipCode] = useState('');
-  const [showZipModal, setShowZipModal] = useState(false);
 
   useEffect(() => {
     const fetchMostSoldProducts = async () => {
       try {
         setLoading(true);
-        const response = await apiService.getMostSoldProducts(9);
+        const response = await apiService.getMostSoldProducts(6);
         if (response.products) {
           setMostSoldProducts(response.products);
         }
@@ -32,120 +31,148 @@ const Home = () => {
   }, []);
 
   const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-    setShowZipModal(true);
-  };
-
-  const handleZipSubmit = (e) => {
     e.preventDefault();
-    if (zipCode && selectedProduct) {
-      // Redirect to marketplace with search parameters
-      navigate(`/marketplace?zip=${zipCode}&produce=${selectedProduct.name}`);
+    if (zipCode) {
+      navigate(`/marketplace?zip=${zipCode}&produce=${searchQuery}`);
     }
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Home</h1>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Search for products..."
-        className="w-full p-3 border border-gray-300 rounded mb-4"
-      />
-
-      {/* Most Sold Products Section */}
-      <div className="bg-white p-4 rounded-2xl shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Most Popular Products</h2>
-        
-        {loading ? (
-          <p className="text-gray-500">Loading popular products...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : mostSoldProducts.length === 0 ? (
-          <p className="text-gray-500">No products found.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mostSoldProducts.map((product, index) => (
-              <div 
-                key={index} 
-                className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => handleProductClick(product)}
-              >
-                <h3 className="font-bold text-lg capitalize">{product.name}</h3>
-                <p className="text-gray-600">Listed {product.count} times</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Links Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-green-50 p-4 rounded-2xl border border-green-100">
-          <h2 className="font-bold text-lg mb-2">Find Local Sellers</h2>
-          <p className="text-gray-700 mb-2">Looking for fresh produce?</p>
-          <ul className="list-disc list-inside text-gray-700">
-            <li>Search by ZIP code</li>
-            <li>Find nearby farmers</li>
-            <li>Get the freshest ingredients</li>
-          </ul>
-        </div>
-        
-        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-          <h2 className="font-bold text-lg mb-2">Recipe Search</h2>
-          <p className="text-gray-700 mb-2">Need cooking inspiration?</p>
-          <ul className="list-disc list-inside text-gray-700">
-            <li>Search for recipes</li>
-            <li>Get ingredient lists</li>
-            <li>Find local ingredients</li>
-          </ul>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative bg-green-700 text-white">
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+        <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Naturally Grown, Incredibly Fresh</h1>
+          <p className="text-xl md:text-2xl mb-8">Our marketplace connects you with local farmers for the freshest produce, grown with care.</p>
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Produce (e.g. apples)"
+              className="flex-1 p-4 rounded-lg text-gray-900"
+            />
+            <input
+              type="text"
+              value={zipCode}
+              onChange={(e) => setZipCode(e.target.value)}
+              placeholder="Enter ZIP code"
+              className="flex-1 p-4 rounded-lg text-gray-900"
+            />
+            <button
+              type="submit"
+              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg transition-colors"
+            >
+              Find Fresh Produce
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* ZIP Code Modal */}
-      {showZipModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Find {selectedProduct?.name} near you</h2>
-            <form onSubmit={handleZipSubmit}>
-              <input
-                type="text"
-                value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
-                placeholder="Enter your ZIP code"
-                className="w-full p-3 border border-gray-300 rounded mb-4"
-                required
-              />
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowZipModal(false);
-                    setZipCode('');
-                  }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
+      {/* About Section */}
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">About Our Marketplace</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              At FarmFresh, we are dedicated to connecting local farmers with their community. Our marketplace offers fresh, seasonal produce while fostering sustainable farming practices and supporting local agriculture.
+            </p>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Popular Products Section */}
+      <div className="bg-green-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Most Popular Products</h2>
+          
+          {loading ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading popular products...</p>
+            </div>
+          ) : error ? (
+            <p className="text-red-500 text-center">{error}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {mostSoldProducts.map((product, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 capitalize">{product.name}</h3>
+                    <p className="text-gray-600">Listed {product.count} times</p>
+                    <Link
+                      to={`/marketplace?produce=${product.name}`}
+                      className="mt-4 inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Find Sellers
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6">
+              <div className="bg-yellow-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Quality Produce</h3>
+              <p className="text-gray-600">Fresh, nutritious produce grown using sustainable practices for the best taste and health benefits.</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="bg-green-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Community Focused</h3>
+              <p className="text-gray-600">Supporting local farmers and creating connections between growers and consumers.</p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="bg-yellow-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Sustainable Practices</h3>
+              <p className="text-gray-600">Committed to environmentally friendly farming methods and reducing food miles.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Section */}
+      <div className="bg-green-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Join Our Community</h2>
+          <p className="text-xl text-gray-600 mb-8">Ready to start buying or selling fresh, local produce?</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/register"
+              className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-bold"
+            >
+              Sign Up Now
+            </Link>
+            <Link
+              to="/marketplace"
+              className="bg-yellow-500 text-gray-900 px-8 py-3 rounded-lg hover:bg-yellow-600 transition-colors font-bold"
+            >
+              Browse Marketplace
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
