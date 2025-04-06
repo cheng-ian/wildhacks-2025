@@ -114,7 +114,7 @@ const Marketplace = () => {
           type="text"
           value={searchQuery}
           onChange={handleSearch}
-          placeholder="Search for produce..."
+          placeholder="Search for produce... (optional)"
           className="w-full p-3 border border-gray-300 rounded mb-4"
         />
       </div>

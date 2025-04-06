@@ -1,5 +1,6 @@
 # Ignore Firebase Admin SDK JSON file
 config/wildhacks-2025-cf527-firebase-adminsdk-fbsvc-4084686e69.json
 .env
+client/.env
 node_modules
 gemini_prompt.cpython-313.pyc
