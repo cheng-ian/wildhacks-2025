@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Search = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
 
@@ -10,8 +12,44 @@ const Search = () => {
       const response = await axios.post('http://localhost:5000/generate', {
         query: searchQuery,
       });
-  
-      setSearchResults(response.data.result); // show Gemini's output
+
+      const fullResponse = response.data.result;
+
+      // Extract CSV section of output
+      const csvMatch = fullResponse.match(/CSV:\s*([\s\S]*?)\n\s*Recipe:/i);
+      const recipeMatch = fullResponse.match(/Recipe:\s*([\s\S]*)/i);
+      
+      let csvLines = [];
+      let ingredientsArray = [];
+      let recipeText = recipeMatch ? recipeMatch[1].trim() : "";
+
+      if (csvMatch && csvMatch[1])
+      {
+        csvLines = csvMatch[1]
+          .trim()
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0);
+
+        // Convert to key-value object array
+        ingredientsArray = csvLines.map(line => {
+          const [ingredient, amount] = line.split(',').map(part => part.trim());
+          return { ingredient, amount };
+        });
+      }
+
+      console.log("Parsed Ingredients:", ingredientsArray);
+
+      setSearchResults(ingredientsArray);
+
+      // move to page that lists ingredients
+      navigate('/ingredients', { 
+        state: { 
+          ingredients: ingredientsArray,
+          recipe: recipeText,
+        }, 
+      });
+
     } catch (error) {
       console.error('Error calling backend:', error);
       setSearchResults("Error generating recipe.");
@@ -50,12 +88,16 @@ const Search = () => {
         </ul>
       </div>
 
-      {searchResults && (
-        <div className="mt-6 bg-white p-4 rounded-2xl shadow">
-          <h2 className="text-xl font-bold mb-2">Search Results</h2>
-          <pre className="whitespace-pre-wrap">{searchResults}</pre>
-        </div>
-      )}
+      {/* {searchResults && (
+        <ul className="list-disc list-inside">
+        {searchResults.map((item, index) => (
+          <li key={index}>
+            {item.ingredient}: {item.amount}
+          </li>
+        ))}
+      </ul>
+      
+      )} */}
 
       <p className="text-gray-500 text-sm mt-4">Powered by Gemini API</p>
     </div>

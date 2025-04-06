@@ -5,6 +5,7 @@ import Marketplace from './Marketplace';
 import SocialFeed from './SocialFeed';
 import Search from './Search';
 import Profile from './Profile';
+import IngredientList from './IngredientList';
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="/feed" element={<SocialFeed />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/ingredients" element={<IngredientList />} />
         </Routes>
       </div>
     </Router>
