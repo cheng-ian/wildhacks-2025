@@ -15,14 +15,14 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow p-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-3 no-underline">
+    <header className="bg-white shadow">
+      <div className="w-full px-2 flex justify-between items-center">
+        <Link to="/" className="flex items-center space-x-3">
           <img src={farmFreshLogo} alt="FarmFresh Logo" className="h-12 w-12 object-contain" />
           <h1 className="text-2xl font-bold text-green-800">FarmFresh</h1>
         </Link>
         
-        <nav className="flex items-center space-x-4">
+        <nav className="flex items-center space-x-4 p-4">
           <Link to="/" className="px-4 py-2 text-gray-700 hover:text-green-600 transition rounded-md hover:bg-gray-50">
             Home
           </Link>

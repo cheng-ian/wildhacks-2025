@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from './services/api';
 import farmFreshLogo from './images/farmfresh-logo.png';
+import produce_image from './images/produce_background.jpg';
+import bgphoto2 from './images/bgphoto2.jpg';
+import TypewriterEffect from './components/TypewriterEffect';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -10,6 +13,14 @@ const Home = () => {
   const [mostSoldProducts, setMostSoldProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const typingPhrases = [
+    "Naturally Grown, Incredibly Fresh",
+    "From Farm to Table, Simply Better",
+    "Local Produce, Global Impact",
+    "Fresh Picks, Happy Community",
+    "Sustainable Farming, Healthier Living"
+  ];
 
   useEffect(() => {
     const fetchMostSoldProducts = async () => {
@@ -40,29 +51,47 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative bg-green-700 text-white">
-        <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Naturally Grown, Incredibly Fresh</h1>
-          <p className="text-xl md:text-2xl mb-8">Our marketplace connects you with local farmers for the freshest produce, grown with care.</p>
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex flex-col md:flex-row gap-4">
+      <div className="relative text-white min-h-[600px]">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{
+            backgroundImage: `url(${produce_image})`,
+            backgroundPosition: 'center 30%'
+          }}
+        />
+        {/* Black Overlay */}
+        <div className="absolute inset-0 bg-black opacity-60 mix-blend-multiply z-10"></div>
+        
+        {/* Content */}
+        <div className="relative flex flex-col items-center justify-center min-h-[600px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-20">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+            <TypewriterEffect 
+              phrases={typingPhrases}
+              typingSpeed={80}
+              deletingSpeed={40}
+              pauseTime={3000}
+            />
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 text-white drop-shadow">Our marketplace connects you with local farmers for the freshest produce, grown with care.</p>
+          <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto flex flex-col md:flex-row gap-4">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Produce (e.g. apples)"
-              className="flex-1 p-4 rounded-lg text-gray-900"
+              className="flex-1 p-4 rounded-lg text-gray-900 shadow-lg"
             />
             <input
               type="text"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
               placeholder="Enter ZIP code"
-              className="flex-1 p-4 rounded-lg text-gray-900"
+              className="flex-1 p-4 rounded-lg text-gray-900 shadow-lg"
             />
             <button
               type="submit"
-              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg transition-colors"
+              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg transition-colors shadow-lg"
             >
               Find Fresh Produce
             </button>
@@ -71,7 +100,7 @@ const Home = () => {
       </div>
 
       {/* About Section */}
-      <div className="bg-white py-16">
+      <div className="bg-green-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">About Our Marketplace</h2>
@@ -83,21 +112,33 @@ const Home = () => {
       </div>
 
       {/* Popular Products Section */}
-      <div className="bg-green-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Most Popular Products</h2>
+      <div className="relative py-16">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{
+            backgroundImage: `url(${bgphoto2})`,
+            backgroundPosition: 'center 30%'
+          }}
+        />
+        {/* Black Overlay */}
+        <div className="absolute inset-0 bg-black opacity-60 mix-blend-multiply z-10"></div>
+        
+        {/* Content */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center text-white mb-12 drop-shadow-lg">Most Popular Products</h2>
           
           {loading ? (
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading popular products...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+              <p className="mt-4 text-white">Loading popular products...</p>
             </div>
           ) : error ? (
-            <p className="text-red-500 text-center">{error}</p>
+            <p className="text-red-300 text-center drop-shadow">{error}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {mostSoldProducts.map((product, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div key={index} className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 capitalize">{product.name}</h3>
                     <p className="text-gray-600">Listed {product.count} times</p>

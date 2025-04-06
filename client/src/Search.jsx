@@ -66,7 +66,7 @@ const Search = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="p-6 max-w-5xl w-full">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-green-800">Recipe Search</h1>
+          <h1 className="text-4xl font-bold mb-4 text-green-800">Let us cook.</h1>
           <p className="mb-8 text-gray-600 text-lg">Type what you want to make, and we'll find recipes, ingredients, and nearby vendors selling what you need!</p>
 
           {/* Search Bar */}
@@ -91,23 +91,23 @@ const Search = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div className="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
-            <h2 className="font-bold text-xl mb-4 text-green-800">Try These Queries:</h2>
+            <h2 className="font-bold text-xl mb-4 text-green-800">Try These Prompts:</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                I want to make steak for dinner
+                Steak dinner with frites
               </li>
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                Find recipes with strawberries
+                Something Chinese or Korean
               </li>
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                What can I cook with potatoes?
+                Tortellini soup
               </li>
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                Suggest vegetarian dinner ideas
+                A delicious sweet treat
               </li>
             </ul>
           </div>
