@@ -10,7 +10,7 @@ import os
 import requests
 from math import radians, cos, sin, sqrt, atan2
 
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+GOOGLE_MAPS_API_KEY = os.getenv("REACT_APP_GOOGLE_MAPS_API_KEY")
 
 # Initialize Flask app
 app = Flask(__name__)
