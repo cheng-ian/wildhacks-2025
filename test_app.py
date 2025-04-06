@@ -1,5 +1,7 @@
 import requests
 import json
+import random
+from datetime import datetime, timedelta
 
 BASE_URL = 'http://127.0.0.1:5000'
 
@@ -52,6 +54,116 @@ names = [
     "Charlotte Taylor"
 ]
 
+# Chicago area locations
+chicago_locations = [
+    # Downtown Chicago
+    "233 S Wacker Dr, Chicago, IL 60606",  # Willis Tower
+    "111 S Michigan Ave, Chicago, IL 60603",  # Art Institute
+    "201 E Randolph St, Chicago, IL 60602",  # Millennium Park
+    "875 N Michigan Ave, Chicago, IL 60611",  # John Hancock Center
+    "600 E Grand Ave, Chicago, IL 60611",  # Navy Pier
+    
+    # North Side Chicago
+    "1060 W Addison St, Chicago, IL 60613",  # Wrigley Field
+    "2001 N Clark St, Chicago, IL 60614",  # Lincoln Park Zoo
+    "1200 S Lake Shore Dr, Chicago, IL 60605",  # Shedd Aquarium
+    "3600 N Halsted St, Chicago, IL 60613",  # Boystown
+    "5700 N Broadway, Chicago, IL 60660",  # Edgewater
+    
+    # South Side Chicago
+    "333 E 35th St, Chicago, IL 60616",  # Guaranteed Rate Field
+    "6401 S Stony Island Ave, Chicago, IL 60637",  # Jackson Park
+    "5700 S Lake Shore Dr, Chicago, IL 60637",  # Museum of Science and Industry
+    "1200 W 35th St, Chicago, IL 60609",  # Bridgeport
+    "6300 S Cottage Grove Ave, Chicago, IL 60637",  # Woodlawn
+    
+    # West Side Chicago
+    "1901 W Madison St, Chicago, IL 60612",  # United Center
+    "2021 N Western Ave, Chicago, IL 60647",  # Bucktown
+    "1850 W Chicago Ave, Chicago, IL 60622",  # West Town
+    "3100 W Chicago Ave, Chicago, IL 60651",  # Humboldt Park
+    "4000 W North Ave, Chicago, IL 60639",  # Hermosa
+    
+    # Evanston (Northwestern)
+    "2420 N Campus Dr, Evanston, IL 60208",  # Northwestern University
+    "815 Noyes St, Evanston, IL 60201",
+    "1603 Orrington Ave, Evanston, IL 60201",  # Downtown Evanston
+    "2100 Ridge Ave, Evanston, IL 60201",  # Evanston City Hall
+    "2233 Sherman Ave, Evanston, IL 60201",
+    
+    # Nearby Suburbs
+    "9599 Skokie Blvd, Skokie, IL 60077",
+    "1151 Lake Cook Rd, Deerfield, IL 60015",
+    "2200 N Oakbrook Center, Oak Brook, IL 60523",
+    "1251 Lake Cook Rd, Highland Park, IL 60035",
+    "7501 Lincoln Ave, Skokie, IL 60077",
+    "3232 Lake Ave, Wilmette, IL 60091",
+    "1701 Lake Ave, Glenview, IL 60025",
+    "5220 Touhy Ave, Skokie, IL 60077",
+    "4999 Old Orchard Shopping Center, Skokie, IL 60077",
+    "475 Central Ave, Highland Park, IL 60035"
+]
+
+# Full list of produce items
+produce_items = [
+    # Vegetables
+    {"name": "Tomatoes", "price": "$3.99 per lb"},
+    {"name": "Potatoes", "price": "$0.99 per lb"},
+    {"name": "Onions", "price": "$1.49 per lb"},
+    {"name": "Sweet Potatoes", "price": "$1.79 per lb"},
+    {"name": "Bell Peppers", "price": "$1.50 each"},
+    {"name": "Carrots", "price": "$1.29 per bunch"},
+    {"name": "Broccoli", "price": "$2.49 per head"},
+    {"name": "Cauliflower", "price": "$3.99 per head"},
+    {"name": "Lettuce", "price": "$2.49 per head"},
+    {"name": "Spinach", "price": "$3.99 per bag"},
+    {"name": "Kale", "price": "$2.99 per bunch"},
+    {"name": "Zucchini", "price": "$1.29 per lb"},
+    {"name": "Cucumber", "price": "$0.79 each"},
+    {"name": "Asparagus", "price": "$3.99 per bunch"},
+    {"name": "Mushrooms", "price": "$3.49 per package"},
+    {"name": "Cabbage", "price": "$1.49 per lb"},
+    {"name": "Brussels Sprouts", "price": "$3.99 per lb"},
+    {"name": "Corn", "price": "$0.50 per ear"},
+    {"name": "Garlic", "price": "$0.89 per head"},
+    {"name": "Eggplant", "price": "$1.99 each"},
+    
+    # Fruits
+    {"name": "Apples", "price": "$1.49 per lb"},
+    {"name": "Bananas", "price": "$0.59 per lb"},
+    {"name": "Oranges", "price": "$1.29 each"},
+    {"name": "Strawberries", "price": "$3.99 per container"},
+    {"name": "Blueberries", "price": "$4.99 per container"},
+    {"name": "Raspberries", "price": "$4.49 per container"},
+    {"name": "Grapes", "price": "$2.99 per lb"},
+    {"name": "Lemons", "price": "$0.79 each"},
+    {"name": "Limes", "price": "$0.59 each"},
+    {"name": "Peaches", "price": "$1.99 per lb"},
+    {"name": "Pears", "price": "$1.79 per lb"},
+    {"name": "Plums", "price": "$1.99 per lb"},
+    {"name": "Watermelon", "price": "$5.99 each"},
+    {"name": "Cantaloupe", "price": "$3.99 each"},
+    {"name": "Honeydew", "price": "$3.99 each"},
+    {"name": "Cherries", "price": "$4.99 per lb"},
+    {"name": "Kiwi", "price": "$0.99 each"},
+    {"name": "Avocado", "price": "$1.50 each"},
+    {"name": "Mango", "price": "$1.99 each"},
+    {"name": "Pineapple", "price": "$4.99 each"},
+    
+    # Herbs and Others
+    {"name": "Basil", "price": "$2.99 per bunch"},
+    {"name": "Cilantro", "price": "$1.49 per bunch"},
+    {"name": "Parsley", "price": "$1.49 per bunch"},
+    {"name": "Mint", "price": "$2.49 per bunch"},
+    {"name": "Rosemary", "price": "$2.99 per bunch"},
+    {"name": "Thyme", "price": "$2.49 per bunch"},
+    {"name": "Ginger", "price": "$3.99 per lb"},
+    {"name": "Honey", "price": "$8.99 per jar"},
+    {"name": "Farm Eggs", "price": "$5.99 per dozen"},
+    {"name": "Microgreens", "price": "$4.99 per container"}
+]
+
+# Original test data - keep for backwards compatibility
 listing_data = {
     'location': '2420 N Campus Dr, Evanston, IL',
     'time': '2025-04-10T10:00:00',
@@ -79,6 +191,7 @@ listing_data3 = {
     ]
 }
 
+# Keep the existing listing data references
 listing_data4 = {
     "location": "017 Berry Estates, Dawntown, CA 30326",
     "time": "2025-04-23T07:10:11",
@@ -88,306 +201,78 @@ listing_data4 = {
     ]
 }
 
-listing_data5 = {
-    "location": "2610 West Crest, West Jefferyborough, NE 56705",
-    "time": "2025-05-06T07:10:11",
-    "produce_items": [
-        {"name": "Squash", "price": "$2.83 per lb"},
-        {"name": "Zucchini", "price": "$0.78 per lb"}
-    ]
-}
+# Skip listing_data5 through listing_data22 - they will be replaced with Chicago locations
 
-listing_data6 = {
-    "location": "2268 Daniel Locks, South Michelle, TX 38344",
-    "time": "2025-04-26T07:10:11",
-    "produce_items": [
-        {"name": "Brussels Sprouts", "price": "$1.53 per lb"},
-        {"name": "Cauliflower", "price": "$2.61 per lb"}
-    ]
-}
+# Generate random dates between now and 3 months in the future
+def random_future_date():
+    days_ahead = random.randint(1, 90)
+    future_date = datetime.now() + timedelta(days=days_ahead)
+    hour = random.randint(8, 19)  # Between 8 AM and 7 PM
+    minute = random.choice([0, 15, 30, 45])
+    future_date = future_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    return future_date.isoformat()
 
-listing_data7 = {
-    "location": "9790 Brady Roads Suite 121, South Valerie, KY 61172",
-    "time": "2025-04-20T07:10:11",
-    "produce_items": [
-        {"name": "Broccoli", "price": "$2.25 per lb"},
-        {"name": "Chard", "price": "$2.12 per lb"}
-    ]
-}
+# Generate a list of listing data for Chicago area
+chicago_listings = []
 
-listing_data8 = {
-    "location": "08100 Rodriguez Crossroad Suite 871, Hodgefort, DC 92369",
-    "time": "2025-05-05T07:10:11",
-    "produce_items": [
-        {"name": "Turnips", "price": "$2.01 per lb"},
-        {"name": "Cucumbers", "price": "$0.83 per lb"}
-    ]
-}
+# Create 50 random listings in Chicago area
+for i in range(50):
+    location = random.choice(chicago_locations)
+    time = random_future_date()
+    
+    # Choose 2-4 random produce items
+    num_items = random.randint(2, 4)
+    selected_items = random.sample(produce_items, num_items)
+    
+    listing = {
+        'location': location,
+        'time': time,
+        'produce_items': selected_items
+    }
+    
+    chicago_listings.append(listing)
 
-listing_data9 = {
-    "location": "908 Suzanne Circle, North Stephen, WY 80440",
-    "time": "2025-04-10T07:10:11",
-    "produce_items": [
-        {"name": "Spinach", "price": "$2.17 per lb"},
-        {"name": "Brussels Sprouts", "price": "$2.50 per lb"}
-    ]
-}
-
-listing_data10 = {
-    "location": "020 Hunt Mill, New Gregory, AZ 81924",
-    "time": "2025-04-10T07:10:11",
-    "produce_items": [
-        {"name": "Sweet Corn", "price": "$2.97 per lb"},
-        {"name": "Radishes", "price": "$2.73 per lb"}
-    ]
-}
-
-listing_data11 = {
-    "location": "413 Kaitlyn Mountain, South Stevemouth, TN 89581",
-    "time": "2025-05-06T07:10:11",
-    "produce_items": [
-        {"name": "Artichokes", "price": "$2.44 per lb"},
-        {"name": "Cucumbers", "price": "$3.21 per lb"}
-    ]
-}
-
-listing_data12 = {
-    "location": "7430 Mason Shoal Apt. 257, Port Jeffery, LA 43258",
-    "time": "2025-05-03T07:10:11",
-    "produce_items": [
-        {"name": "Peppers", "price": "$2.12 per lb"},
-        {"name": "Garlic", "price": "$1.94 per lb"}
-    ]
-}
-
-listing_data13 = {
-    "location": "55113 Dwayne Knolls, Brittanyborough, NH 37053",
-    "time": "2025-04-12T07:10:11",
-    "produce_items": [
-        {"name": "Celery", "price": "$0.75 per lb"},
-        {"name": "Eggplant", "price": "$1.91 per lb"}
-    ]
-}
-
-listing_data14 = {
-    "location": "708 Acevedo Mission Suite 150, Port Sean, WV 21383",
-    "time": "2025-04-15T07:10:11",
-    "produce_items": [
-        {"name": "Tomatoes", "price": "$1.33 per lb"},
-        {"name": "Brussels Sprouts", "price": "$0.61 per lb"}
-    ]
-}
-
-listing_data15 = {
-    "location": "168 Ford Passage, Simmonsside, FL 82416",
-    "time": "2025-05-04T07:10:11",
-    "produce_items": [
-        {"name": "Sweet Corn", "price": "$3.49 per lb"},
-        {"name": "Turnips", "price": "$2.25 per lb"}
-    ]
-}
-
-listing_data16 = {
-    "location": "866 Holden Streets Suite 878, Michelleport, RI 42615",
-    "time": "2025-04-14T07:10:11",
-    "produce_items": [
-        {"name": "Eggplant", "price": "$2.42 per lb"},
-        {"name": "Broccoli", "price": "$1.14 per lb"}
-    ]
-}
-
-listing_data17 = {
-    "location": "16598 Brenda Mall Apt. 955, Port Kari, KS 32842",
-    "time": "2025-04-22T07:10:11",
-    "produce_items": [
-        {"name": "Pumpkin", "price": "$1.86 per lb"},
-        {"name": "Lettuce", "price": "$1.69 per lb"}
-    ]
-}
-
-listing_data18 = {
-    "location": "5125 Jessica Meadows Suite 825, East Kenneth, MT 53640",
-    "time": "2025-04-29T07:10:11",
-    "produce_items": [
-        {"name": "Beets", "price": "$2.75 per lb"},
-        {"name": "Celery", "price": "$2.01 per lb"}
-    ]
-}
-
-listing_data19 = {
-    "location": "87789 Smith Expressway Apt. 931, North Christophertown, UT 61838",
-    "time": "2025-05-05T07:10:11",
-    "produce_items": [
-        {"name": "Brussels Sprouts", "price": "$2.48 per lb"},
-        {"name": "Cauliflower", "price": "$0.61 per lb"}
-    ]
-}
-
-listing_data20 = {
-    "location": "5747 Jeffery Hills Apt. 887, South Michellebury, CO 41884",
-    "time": "2025-04-15T07:10:11",
-    "produce_items": [
-        {"name": "Pumpkin", "price": "$2.11 per lb"},
-        {"name": "Celery", "price": "$2.49 per lb"}
-    ]
-}
-
-listing_data21 = {
-    "location": "261 Williams Fall, East Marcusview, VA 56987",
-    "time": "2025-04-30T07:10:11",
-    "produce_items": [
-        {"name": "Turnips", "price": "$2.71 per lb"},
-        {"name": "Spinach", "price": "$1.92 per lb"}
-    ]
-}
-
-listing_data22 = {
-    "location": "322 Eddie Gateway Suite 246, Kendratown, OR 79464",
-    "time": "2025-04-14T07:10:11",
-    "produce_items": [
-        {"name": "Kale", "price": "$1.34 per lb"},
-        {"name": "Potatoes", "price": "$2.77 per lb"}
-    ]
-}
-
-listing_data23 = {
-    "location": "903 Austin Isle, Petersonhaven, NE 37363",
-    "time": "2025-05-03T07:10:11",
-    "produce_items": [
-        {"name": "Yams", "price": "$3.15 per lb"},
-        {"name": "Spinach", "price": "$0.85 per lb"}
-    ]
-}
-
-listing_data24 = {
-    "location": "3520 Fernando Harbor, Lake Steven, GA 34731",
-    "time": "2025-05-06T07:10:11",
-    "produce_items": [
-        {"name": "Cauliflower", "price": "$1.43 per lb"},
-        {"name": "Kale", "price": "$3.23 per lb"}
-    ]
-}
-
-listing_data25 = {
-    "location": "896 John Run Apt. 407, Danielchester, CO 04216",
-    "time": "2025-05-05T07:10:11",
-    "produce_items": [
-        {"name": "Celery", "price": "$2.42 per lb"},
-        {"name": "Brussels Sprouts", "price": "$2.13 per lb"}
-    ]
-}
-
-listing_data26 = {
-    "location": "6983 Anthony Ridge, Michaelberg, NJ 51731",
-    "time": "2025-04-22T07:10:11",
-    "produce_items": [
-        {"name": "Leeks", "price": "$0.92 per lb"},
-        {"name": "Garlic", "price": "$1.74 per lb"}
-    ]
-}
-
-listing_data27 = {
-    "location": "09490 Anne Burg Suite 211, Leonardbury, NV 02374",
-    "time": "2025-04-15T07:10:11",
-    "produce_items": [
-        {"name": "Broccoli", "price": "$2.29 per lb"},
-        {"name": "Beets", "price": "$2.37 per lb"}
-    ]
-}
-
-listing_data28 = {
-    "location": "9168 Norman Flat Apt. 171, Danashire, WY 34348",
-    "time": "2025-04-26T07:10:11",
-    "produce_items": [
-        {"name": "Radishes", "price": "$2.88 per lb"},
-        {"name": "Eggplant", "price": "$2.82 per lb"}
-    ]
-}
-
-listing_data29 = {
-    "location": "33711 Young Corner Suite 600, Ramirezberg, MN 52191",
-    "time": "2025-04-07T07:10:11",
-    "produce_items": [
-        {"name": "Celery", "price": "$1.67 per lb"},
-        {"name": "Carrots", "price": "$1.20 per lb"}
-    ]
-}
-
-listing_data30 = {
-    "location": "579 Alison Turnpike, Sanchezmouth, AR 11543",
-    "time": "2025-04-18T07:10:11",
-    "produce_items": [
-        {"name": "Tomatoes", "price": "$0.96 per lb"},
-        {"name": "Garlic", "price": "$3.05 per lb"}
-    ]
-}
-
-
-
-import requests
-import json
-
-BASE_URL = 'http://127.0.0.1:5000'
-
-# List of user names (diverse + representative of NU undergrads)
-names = [
-    "Hiroshi Tanaka", "Soo-Jin Kim", "Ananya Patel", "Wei Zhang",
-    "Jin Park", "Ling Chen", "Aarav Singh", "Mei Li",
-    "Jamal Washington", "Aaliyah Johnson", "Malik Thompson", "Imani Davis",
-    "Kwame Brown", "Santiago García", "Isabella Rodriguez", "Mateo Hernandez",
-    "Camila Lopez", "Diego Martinez", "Lucia Gonzalez", "Dakota Yazzie",
-    "Cheyenne Begay", "James Smith", "Emily Johnson", "Michael Williams",
-    "Emma Brown", "William Jones", "Olivia Miller", "Benjamin Davis",
-    "Sophia Wilson", "Alexander Moore"
-]
-
-# Generate user objects
-users = [{"uid": f"user{i+1}", "name": name} for i, name in enumerate(names)]
-
-# Reference all listing_data variables
-listings = [
-    listing_data, listing_data2, listing_data3, listing_data4, listing_data5,
-    listing_data6, listing_data7, listing_data8, listing_data9, listing_data10,
-    listing_data11, listing_data12, listing_data13, listing_data14, listing_data15,
-    listing_data16, listing_data17, listing_data18, listing_data19, listing_data20,
-    listing_data21, listing_data22, listing_data23, listing_data24, listing_data25,
-    listing_data26, listing_data27, listing_data28, listing_data29, listing_data30
-]
-
-# Add all users
 def test_add_users():
-    for user in users:
-        response = requests.post(f'{BASE_URL}/add_user', json=user)
-        print(f"Add User {user['uid']}: {response.status_code}", response.json())
+    for i, name in enumerate(names):
+        uid = f'user{i+100}'
+        response = requests.post(f'{BASE_URL}/add_user', json={'uid': uid, 'name': name})
+        print(f'Added user {name}: {response.json()}')
 
-# Add one listing per user
 def test_add_listings_to_users():
-    for user, listing in zip(users, listings):
-        response = requests.post(f'{BASE_URL}/add_listing/{user["uid"]}', json=listing)
-        print(f"Add Listing for {user['uid']}: {response.status_code}", response.json())
+    # Add listings to existing users
+    for i in range(len(names)):
+        uid = f'user{i+100}'
+        
+        # Add 1-3 random listings for each user
+        num_listings = random.randint(1, 3)
+        for j in range(num_listings):
+            listing = random.choice(chicago_listings)
+            response = requests.post(f'{BASE_URL}/add_listing/{uid}', json=listing)
+            print(f'Added listing for {uid}: {response.json()}')
 
-# Get all users and print data
 def test_get_all_users():
-    for user in users:
-        response = requests.get(f'{BASE_URL}/user/{user["uid"]}')
-        print(f'Get User {user["uid"]}: {response.status_code}')
-        print(json.dumps(response.json(), indent=2))
+    for i in range(len(names)):
+        uid = f'user{i+100}'
+        response = requests.get(f'{BASE_URL}/user/{uid}')
+        if response.status_code == 200:
+            user_data = response.json()
+            print(f'User {user_data["name"]} has {len(user_data.get("listings", []))} listings')
 
-# Produce search test
 def test_query_produce():
-    zip_code = '60201'
-    params_no_filter = {'zip': zip_code, 'limit': 5}
-    response = requests.get(f'{BASE_URL}/query_produce', params=params_no_filter)
-    print('\nQuery Produce (no filter):', response.status_code)
-    print(json.dumps(response.json(), indent=2))
+    # Test with a few common produce items in Chicago area (60611 is downtown Chicago)
+    produce_items_to_test = ["Tomatoes", "Apples", "Carrots", "Strawberries", "Broccoli"]
+    for item in produce_items_to_test:
+        response = requests.get(f'{BASE_URL}/query_produce?produce={item}&zip=60611&limit=10')
+        if response.status_code == 200:
+            results = response.json()
+            print(f'Found {len(results.get("matching_listings", []))} sellers for {item}')
+            
+            # Print the first few matches
+            for idx, listing in enumerate(results.get("matching_listings", [])[:3]):
+                print(f'  Seller {idx+1}: {listing["name"]} at {listing["location"]}, {listing["distance_miles"]} miles away')
 
-    params_with_filter = {'zip': zip_code, 'limit': 5, 'produce': 'Tomatoes'}
-    response = requests.get(f'{BASE_URL}/query_produce', params=params_with_filter)
-    print('\nQuery Produce (filtered by Tomatoes):', response.status_code)
-    print(json.dumps(response.json(), indent=2))
-
-# Main
-if __name__ == '__main__':
+if __name__ == "__main__":
+    # Run the tests in order
     test_add_users()
     test_add_listings_to_users()
     test_get_all_users()
