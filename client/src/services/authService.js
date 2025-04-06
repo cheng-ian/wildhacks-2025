@@ -56,10 +56,23 @@ export async function getUserProfile() {
 // Add a produce listing through authenticated endpoint
 export async function addListing(listingData) {
   try {
+    // Make sure produce_items has price field for each item
+    const produce_items = listingData.produce_items.map(item => ({
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      price: item.price
+    }));
+    
+    const dataToSend = {
+      ...listingData,
+      produce_items
+    };
+    
     const axiosAuth = await getAuthenticatedAxios();
     const response = await axiosAuth.post(
       `${API_URL}/add_listing/${auth.currentUser.uid}`, 
-      listingData
+      dataToSend
     );
     return response.data;
   } catch (error) {

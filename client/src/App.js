@@ -7,6 +7,7 @@ import Search from './Search';
 import Profile from './Profile';
 import IngredientList from './IngredientList';
 import Header from './components/Header';
+import CreateListing from './components/CreateListing';
 
 // Auth Components
 import { AuthProvider } from './auth/AuthContext';
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="/user-profile" element={<UserProfile />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/ingredients" element={<IngredientList />} />
+              <Route path="/create-listing" element={<CreateListing />} />
             </Route>
           </Routes>
         </div>

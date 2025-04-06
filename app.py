@@ -168,6 +168,11 @@ def add_listing(uid):
     if not all([location, time, produce_items]):
         return jsonify({'error': 'Location, time, and produce_items required'}), 400
 
+    # Validate produce items have price, quantity and units
+    for item in produce_items:
+        if not all(k in item for k in ['name', 'quantity', 'unit', 'price']):
+            return jsonify({'error': 'All produce items must have name, quantity, unit, and price'}), 400
+    
     # Geocode the address to get lat/lon
     lat, lon = geocode_address(location)
     if lat is None or lon is None:
@@ -175,12 +180,14 @@ def add_listing(uid):
 
     user_ref = users_collection.document(uid)
 
+    # Create the listing with price and timestamp
     listing_event = {
         'location': location,
         'lat': lat,
         'lon': lon,
         'time': time,
-        'produce_items': produce_items
+        'produce_items': produce_items,
+        'created_at': datetime.now().isoformat()
     }
 
     user_ref.update({
@@ -246,15 +253,17 @@ def query_produce():
 
                             if matched_items:
                                 dist = calculate_distance(user_lat, user_lon, event['lat'], event['lon'])
+                                
                                 matching_listings.append({
-                                    'uid': user_data['uid'],
-                                    'name': user_data['name'],
+                                    'user_name': user_data.get('name', 'Unknown'),
+                                    'user_id': user_data.get('uid', ''),
                                     'location': event['location'],
                                     'time': event['time'],
                                     'produce_items': matched_items,
                                     'distance_miles': round((dist * 0.621371), 2),
                                     'lat': event['lat'],
-                                    'lon': event['lon']
+                                    'lon': event['lon'],
+                                    'created_at': event.get('created_at', '')
                                 })
                         except Exception as e:
                             print(f"Error processing event: {str(e)}")

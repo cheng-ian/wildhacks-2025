@@ -16,16 +16,46 @@ const Marketplace = () => {
   const markersRef = useRef([]);
 
   const formatDateTime = (dateTimeStr) => {
-    const date = new Date(dateTimeStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    try {
+      // Check if the string contains "at" format (e.g., "2023-04-06 at 15:30")
+      if (dateTimeStr.includes(' at ')) {
+        const [datePart, timePart] = dateTimeStr.split(' at ');
+        const date = new Date(datePart);
+        
+        // If date is invalid, just return the original string
+        if (isNaN(date.getTime())) {
+          return dateTimeStr;
+        }
+        
+        const formattedDate = date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        
+        return `${formattedDate} at ${timePart.trim()}`;
+      } else {
+        // Try to parse as ISO string or regular date
+        const date = new Date(dateTimeStr);
+        if (isNaN(date.getTime())) {
+          return dateTimeStr;
+        }
+        
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateTimeStr;
+    }
   };
 
   useEffect(() => {
@@ -55,13 +85,13 @@ const Marketplace = () => {
         const marker = new window.google.maps.Marker({
           position: { lat: listing.lat, lng: listing.lon },
           map: googleMapRef.current,
-          title: listing.name
+          title: listing.user_name || 'Unknown seller'
         });
 
         const infowindow = new window.google.maps.InfoWindow({
           content: `
             <div>
-              <h3>${listing.name}</h3>
+              <h3>${listing.user_name || 'Unknown seller'}</h3>
               <p>Location: ${listing.location}</p>
               <p>Time: ${formatDateTime(listing.time)}</p>
               <p>Distance: ${listing.distance_miles} miles</p>
@@ -225,7 +255,7 @@ const Marketplace = () => {
             <div className="bg-green-600 text-white p-2 px-3">
               <h2 className="text-lg font-bold">Available Listings</h2>
             </div>
-            <div className="overflow-auto flex-grow">
+            <div className="overflow-y-auto flex-grow max-h-[calc(600px-40px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {filteredListings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                   <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -236,38 +266,41 @@ const Marketplace = () => {
                   <p className="text-gray-400 mt-1">Try searching with a different ZIP code</p>
                 </div>
               ) : (
-                filteredListings.map((listing, index) => (
-                  <div 
-                    key={index} 
-                    className="p-3 border-b hover:bg-green-50 transition-colors last:border-b-0"
-                  >
-                    <h3 className="font-bold text-lg text-green-700">{listing.name}</h3>
-                    <div className="grid grid-cols-2 gap-1 text-sm mt-1">
-                      <p className="text-gray-600">
-                        <span className="font-semibold">Location:</span> {listing.location}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-semibold">Distance:</span> {listing.distance_miles} miles
-                      </p>
-                    </div>
-                    <p className="text-gray-600 text-sm mt-1">
-                      <span className="font-semibold">Time:</span> {formatDateTime(listing.time)}
-                    </p>
-                    <div className="mt-2">
-                      <h4 className="font-semibold text-sm text-gray-700">Available Items:</h4>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {listing.produce_items.map((item, itemIndex) => (
-                          <span 
-                            key={itemIndex} 
-                            className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
-                          >
-                            {item.name}
-                          </span>
-                        ))}
+                <div className="divide-y divide-gray-200">
+                  {filteredListings.map((listing, index) => (
+                    <div 
+                      key={index} 
+                      className="p-3 hover:bg-green-50 transition-colors"
+                    >
+                      <h3 className="font-bold text-lg text-green-700">{listing.user_name || 'Unknown Seller'}</h3>
+                      <div className="grid grid-cols-2 gap-1 text-sm mt-1">
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Location:</span> {listing.location}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Distance:</span> {listing.distance_miles} miles
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">When:</span> {formatDateTime(listing.time)}
+                        </p>
+                        <p className="text-gray-600">
+                          <span className="font-semibold">Items:</span> {listing.produce_items.length}
+                        </p>
+                      </div>
+                      <div className="mt-3">
+                        <p className="font-semibold text-sm text-gray-700">Available Produce:</p>
+                        <ul className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {listing.produce_items.map((item, idx) => (
+                            <li key={idx} className="flex justify-between items-center bg-green-50 rounded p-2 text-sm">
+                              <span>{item.name} - {item.quantity} {item.unit}</span>
+                              <span className="font-semibold">${item.price}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </div>
