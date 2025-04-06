@@ -4,6 +4,8 @@ import firebase_admin
 from flask import Flask, jsonify, request
 from firebase_admin import credentials, firestore
 from datetime import datetime
+from flask_cors import CORS
+from gemini_prompt import generate_recipe
 
 app = Flask(__name__)
 
@@ -17,6 +19,25 @@ def hello_world():
 
 # Get Firestore client
 db = firestore.client()
+
+# Allow requests from React frontend
+CORS(app)
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    data = request.json
+    user_input = data.get('query')
+    print("Received input:", user_input)
+
+    if not user_input:
+        return jsonify({"error": "No query provided"}), 400
+
+    try:
+        result = generate_recipe(user_input)
+        return jsonify({"result": result})
+    except Exception as e:
+        print("Error generating recipe:", e)  # Print error to terminal
+        return jsonify({"error": "Failed to generate recipe"}), 500
 
 # Route to create a new listing
 @app.route('/create-listing', methods=['POST'])
@@ -37,7 +58,7 @@ def create_listing():
         'timestamp': datetime.now()
     })
 
-    listing_id = listing_ref[1].id
+    listing_id = listing_ref.id  # Get the ID of the new listing
     
     # Now, create product entries (items being sold) under this listing
     for item in items:
