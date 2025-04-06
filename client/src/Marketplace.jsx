@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { apiService } from './services/api';
 
 const Marketplace = () => {
@@ -96,6 +96,7 @@ const Marketplace = () => {
               <p>Time: ${formatDateTime(listing.time)}</p>
               <p>Distance: ${listing.distance_miles} miles</p>
               <p>Items: ${listing.produce_items.map(item => item.name).join(', ')}</p>
+              <p><a href="/seller/${listing.user_id}" target="_blank">View All Listings</a></p>
             </div>
           `
         });
@@ -272,18 +273,26 @@ const Marketplace = () => {
                       key={index} 
                       className="p-3 hover:bg-green-50 transition-colors"
                     >
-                      <h3 className="font-bold text-lg text-green-700">{listing.user_name || 'Unknown Seller'}</h3>
+                      <div className="flex justify-between items-start mb-2">
+                        <Link 
+                          to={`/seller/${listing.user_id}`}
+                          className="font-bold text-lg text-green-700 hover:text-green-900 hover:underline"
+                        >
+                          {listing.user_name || 'Unknown Seller'}
+                        </Link>
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          {listing.distance_miles} miles
+                        </span>
+                      </div>
+                      
                       <div className="grid grid-cols-2 gap-1 text-sm mt-1">
                         <p className="text-gray-600">
                           <span className="font-semibold">Location:</span> {listing.location}
                         </p>
                         <p className="text-gray-600">
-                          <span className="font-semibold">Distance:</span> {listing.distance_miles} miles
-                        </p>
-                        <p className="text-gray-600">
                           <span className="font-semibold">When:</span> {formatDateTime(listing.time)}
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 col-span-2">
                           <span className="font-semibold">Items:</span> {listing.produce_items.length}
                         </p>
                       </div>
@@ -297,6 +306,17 @@ const Marketplace = () => {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                      <div className="mt-3 text-right">
+                        <Link 
+                          to={`/seller/${listing.user_id}`}
+                          className="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center"
+                        >
+                          View all listings from this seller
+                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                          </svg>
+                        </Link>
                       </div>
                     </div>
                   ))}
