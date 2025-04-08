@@ -1,0 +1,6 @@
+services:
+  type: web
+  name: wildhacks-2025
+  env: python
+  buildCommand: pip install -r requirements.txt
+  startCommand: gunicorn app:app

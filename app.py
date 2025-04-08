@@ -27,7 +27,7 @@ users_collection = db.collection('users')
 # Configure CORS with specific settings
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://localhost:3000"],  # React's default port
+        "origins": "*",  # React's default port
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
@@ -313,4 +313,4 @@ def get_most_sold_products():
 
 # Run Flask app
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)
